@@ -1,0 +1,31 @@
+{% extends "index.html" %}
+
+{% block content %}
+<h1>Jubilea</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Jubileumnaam</th>
+            <th>Jubileumdag</th>
+            <th>Persoon</th>
+            <th>Acties</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for jubileum in jubilea %}
+        <tr>
+            <td>{{ jubileum.jubileumnaam }}</td>
+            <td>{{ jubileum.jubileumdag }}</td>
+            <td>{{ jubileum.persoon.voornaam }} {{ jubileum.persoon.achternaam }}</td>
+            <td>
+                <a href="{{ url_for('edit_jubileum', jubileum_id=jubileum.id) }}" class="btn btn-sm btn-primary">Bewerken</a>
+                <a href="{{ url_for('delete_jubileum', jubileum_id=jubileum.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Weet je zeker dat je dit jubileum wilt verwijderen?')">Verwijderen</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<a href="{{ url_for('new_jubileum') }}" class="btn btn-primary">Nieuw Jubileum Toevoegen</a>
+{% endblock %}

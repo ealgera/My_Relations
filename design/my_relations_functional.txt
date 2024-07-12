@@ -1,0 +1,4 @@
+My_relations_app is een Python applicatie gebaseerd op packages zoals FastAPI en SQLModel
+De applicatie bestaat uit een database met een 5-tal entiteiten. Ik gebruik als database sqlite. Maar binnen de applicatie wordt met een ORM SQLModel gewerkt.
+De database moet middels formulieren in de applicatie gevuld kunnen worden en de gegevens kunnen tonen. Verder zal er sprake zijn van een logo of plaatjes en mogelijk specifieke CSS. Ook moet er een aanmelding op basis van OAuth 2.0 mogelijk zijn via een provider zoals Google.
+

@@ -1,0 +1,10 @@
+authlib
+fastapi
+itsdangerous
+uvicorn
+sqlmodel
+python-multipart
+python-jose[cryptography]
+passlib[bcrypt]
+python-dotenv
+dateutils

@@ -1,0 +1,29 @@
+{% extends "index.html" %}
+
+{% block content %}
+<h1>{{ family.familienaam }}</h1>
+
+<h2>Adres</h2>
+<p>
+    {{ family.straatnaam }} {{ family.huisnummer }}
+    {% if family.huisnummer_toevoeging %}{{ family.huisnummer_toevoeging }}{% endif %},
+    {{ family.postcode }} {{ family.plaats }}
+</p>
+
+<h2>Familieleden</h2>
+{% if members %}
+    <ul>
+    {% for member in members %}
+        <li>
+            <a href="{{ url_for('edit_persoon', persoon_id=member.id) }}">
+                {{ member.voornaam }} {{ member.achternaam }}
+            </a>
+        </li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>Deze familie heeft nog geen geregistreerde leden.</p>
+{% endif %}
+
+<a href="{{ url_for('list_families') }}" class="btn btn-secondary">Terug naar Families</a>
+{% endblock %}

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatiebeheer Systeem</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/custom.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        :root {
+            --gradient-start: {{ config.gradient_start if config else '#ff69b4' }};
+            --gradient-end: {{ config.gradient_end if config else '#4169e1' }};
+        }
+    </style>
+    <script>
+        console.log('Template config:', {
+            gradientStart: '{{ config.gradient_start if config else "Not set" }}',
+            gradientEnd: '{{ config.gradient_end if config else "Not set" }}'
+        });
+        console.log('CSS variables set:', {
+            gradientStart: getComputedStyle(document.documentElement).getPropertyValue('--gradient-start'),
+            gradientEnd: getComputedStyle(document.documentElement).getPropertyValue('--gradient-end')
+        });
+    </script>
+</head>
+<body>
+    <header class="header navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center" href="{{ url_for('home') }}">
+                <img src="{{ url_for('static', path='/images/logo.jpg') }}" alt="Relatiebeheer Logo" class="logo">
+                <span>Relatiebeheer Systeem</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="ml-auto">
+                {% if request.session.get('user') %}
+                    Welkom, {{ request.session.get('user').get('name', 'Gebruiker') }}!
+                    <a href="{{ url_for('logout') }}" class="btn btn-outline-light">Uitloggen</a>
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="btn btn-outline-light">Inloggen met Google</a>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    <div class="container-fluid flex-grow-1">
+        <div class="row h-100">
+            <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+                <div class="position-sticky pt-3">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('list_families') }}">Families</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('list_personen') }}">Personen</a>
+                        </li>                        
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('list_jubilea') }}">Jubilea</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('list_relaties') }}">Relaties</a>
+                        </li> 
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('list_jubileumtypes') }}">Jubileumtypes</a>
+                        </li>                       
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('list_relatietypes') }}">Relatietypes</a>
+                        </li>
+                        {% if request.session.get('user', {}).get('role') == 'Administrator' %}
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Administrator
+                                </a>
+                            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <li><a class="dropdown-item" href="{{ url_for('list_users') }}">Gebruikers</a></li>
+                        </ul>
+                    </li>
+                    {% endif %}
+                        <li class="nav-item">
+                            Configuratie
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 content">
+                {% block content %}
+                    <h2>Aankomende Gebeurtenissen</h2>
+                    {% if upcoming_events %}
+                        <ul class="list-group compact-list">
+                        {% for event in upcoming_events %}
+                            <li class="list-group-item d-flex align-items-center">
+                                <!-- Icoon selectie op basis van gebeurtenistype -->
+                                {% if event.event_type == "Geboortedag" %}
+                                    <!-- <span class="material-icons event-icon" style="color: #FF69B4;">cake &nbsp;</span> -->
+                                    <span class="material-icons event-icon" style="color: #FF69B4; margin-right: 0.5em;">cake</span>
+                                {% elif event.event_type == "Huwelijk" %}
+                                    <span class="material-icons event-icon" style="color: #4169E1; margin-right: 0.5em;">favorite</span>
+                                {% else %}
+                                    <span class="material-icons event-icon" style="color: #32CD32; margin-right: 0.5em;">event</span>
+                                {% endif %}
+                                
+                                <!-- Gebeurtenis details -->
+                                <div class="event-details">
+                                    <strong>{{ event.date.strftime('%d-%m-%Y') }}</strong>: 
+                                    {{ event.name }} - {{ event.description }}
+                                    {% if event.event_type != "Geboortedag" %}
+                                        ({{ event.event_type }})
+                                    {% endif %}
+                                </div>
+                            </li>
+                        {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="alert alert-info">Geen aankomende gebeurtenissen gevonden voor deze en volgende maand.</p>
+                    {% endif %}
+                    {% endblock %}
+            </main>
+        </div>
+    </div>
+
+    <footer class="footer mt-auto py-3">
+        <div class="container-fluid">
+            <span>Copyright ©2024 All rights reserved | Relatiebeheer Systeem | Claude 3.5 Sonnet & Eric Algera</span>
+        </div>
+    </footer>
+
+    <script>
+        console.log('CSS variables:', {
+            gradientStart: getComputedStyle(document.documentElement).getPropertyValue('--gradient-start').trim(),
+            gradientEnd: getComputedStyle(document.documentElement).getPropertyValue('--gradient-end').trim()
+        });
+    </script>
+    
+</body>
+</html>

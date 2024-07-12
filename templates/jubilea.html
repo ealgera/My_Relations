@@ -1,0 +1,51 @@
+{% extends "index.html" %}
+
+{% block content %}
+<h1>Jubilea</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                <a href="/jubilea?sort=jubileumtype" 
+                   class="{% if current_sort == 'jubileumtype' %}text-primary{% endif %}">
+                    Jubileumtype
+                    {% if current_sort == 'jubileumtype' %}&#9660;{% endif %}
+                </a>
+            </th>
+            <th>
+                <a href="/jubilea?sort=jubileumdag"
+                   class="{% if current_sort == 'jubileumdag' %}text-primary{% endif %}">
+                    Jubileumdag
+                    {% if current_sort == 'jubileumdag' %}&#9660;{% endif %}
+                </a>
+            </th>
+            <th>
+                <a href="/jubilea?sort=persoon"
+                   class="{% if current_sort == 'persoon' %}text-primary{% endif %}">
+                    Persoon
+                    {% if current_sort == 'persoon' %}&#9660;{% endif %}
+                </a>
+            </th>
+            <th>Omschrijving</th>
+            <th>Acties</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for jubileum in jubilea %}
+        <tr>
+            <td>{{ jubileum.jubileumtype.naam }}</td>
+            <td>{{ jubileum.jubileumdag }}</td>
+            <td>{{ jubileum.persoon.voornaam }} {{ jubileum.persoon.achternaam }}</td>
+            <td>{{ jubileum.omschrijving }}</td>
+            <td>
+                <a href="{{ url_for('edit_jubileum', jubileum_id=jubileum.id) }}" class="btn btn-sm btn-primary">Bewerken</a>
+                <a href="{{ url_for('delete_jubileum', jubileum_id=jubileum.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Weet je zeker dat je dit jubileum wilt verwijderen?')">Verwijderen</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<a href="{{ url_for('new_jubileum') }}" class="btn btn-primary">Nieuw Jubileum Toevoegen</a>
+{% endblock %}

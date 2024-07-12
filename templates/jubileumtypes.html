@@ -1,0 +1,27 @@
+{% extends "index.html" %}
+
+{% block content %}
+<h1>Jubileumtypes</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Naam</th>
+            <th>Acties</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for jubileumtype in jubileumtypes %}
+        <tr>
+            <td>{{ jubileumtype.naam }}</td>
+            <td>
+                <a href="{{ url_for('edit_jubileumtype', jubileumtype_id=jubileumtype.id) }}" class="btn btn-sm btn-primary">Bewerken</a>
+                <a href="{{ url_for('delete_jubileumtype', jubileumtype_id=jubileumtype.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Weet je zeker dat je dit jubileumtype wilt verwijderen?')">Verwijderen</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<a href="{{ url_for('new_jubileumtype') }}" class="btn btn-primary">Nieuw Jubileumtype Toevoegen</a>
+{% endblock %}

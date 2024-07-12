@@ -1,0 +1,43 @@
+{% extends "index.html" %}
+
+{% block content %}
+<h1>{% if relatie %}Relatie Bewerken{% else %}Nieuwe Relatie{% endif %}</h1>
+
+<form method="POST">
+    <div class="mb-3">
+        <label for="persoon1_id" class="form-label">Persoon 1</label>
+        <select class="form-select" id="persoon1_id" name="persoon1_id" required>
+            <option value="">Selecteer een persoon</option>
+            {% for persoon in personen %}
+                <option value="{{ persoon.id }}" {% if relatie and relatie.persoon1_id == persoon.id %}selected{% endif %}>
+                    {{ persoon.voornaam }} {{ persoon.achternaam }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="mb-3">
+        <label for="relatietype_id" class="form-label">Relatietype</label>
+        <select class="form-select" id="relatietype_id" name="relatietype_id" required>
+            <option value="">Selecteer een relatietype</option>
+            {% for relatietype in relatietypes %}
+                <option value="{{ relatietype.id }}" {% if relatie and relatie.relatietype_id == relatietype.id %}selected{% endif %}>
+                    {{ relatietype.relatienaam }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="mb-3">
+        <label for="persoon2_id" class="form-label">Persoon 2</label>
+        <select class="form-select" id="persoon2_id" name="persoon2_id" required>
+            <option value="">Selecteer een persoon</option>
+            {% for persoon in personen %}
+                <option value="{{ persoon.id }}" {% if relatie and relatie.persoon2_id == persoon.id %}selected{% endif %}>
+                    {{ persoon.voornaam }} {{ persoon.achternaam }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Opslaan</button>
+    <a href="{{ url_for('list_relaties') }}" class="btn btn-secondary">Annuleren</a>
+</form>
+{% endblock %}

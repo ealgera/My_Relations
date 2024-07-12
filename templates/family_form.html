@@ -1,0 +1,34 @@
+{% extends "index.html" %}
+
+{% block content %}
+<h1>{% if family %}Familie Bewerken{% else %}Nieuwe Familie{% endif %}</h1>
+
+<form method="POST">
+    <div class="mb-3">
+        <label for="familienaam" class="form-label">Familienaam</label>
+        <input type="text" class="form-control" id="familienaam" name="familienaam" value="{{ family.familienaam if family else '' }}" required>
+    </div>
+    <div class="mb-3">
+        <label for="straatnaam" class="form-label">Straatnaam</label>
+        <input type="text" class="form-control" id="straatnaam" name="straatnaam" value="{{ family.straatnaam if family else '' }}" required>
+    </div>
+    <div class="mb-3">
+        <label for="huisnummer" class="form-label">Huisnummer</label>
+        <input type="text" class="form-control" id="huisnummer" name="huisnummer" value="{{ family.huisnummer if family else '' }}" required>
+    </div>
+    <div class="mb-3">
+        <label for="huisnummer_toevoeging" class="form-label">Huisnummer Toevoeging</label>
+        <input type="text" class="form-control" id="huisnummer_toevoeging" name="huisnummer_toevoeging" value="{{ family.huisnummer_toevoeging if family else '' }}">
+    </div>
+    <div class="mb-3">
+        <label for="postcode" class="form-label">Postcode</label>
+        <input type="text" class="form-control" id="postcode" name="postcode" value="{{ family.postcode if family else '' }}" required>
+    </div>
+    <div class="mb-3">
+        <label for="plaats" class="form-label">Plaats</label>
+        <input type="text" class="form-control" id="plaats" name="plaats" value="{{ family.plaats if family else '' }}" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Opslaan</button>
+    <a href="{{ url_for('list_families') }}" class="btn btn-secondary">Annuleren</a>
+</form>
+{% endblock %}
