@@ -20,7 +20,7 @@ async def list_users(request: Request, session: Session = Depends(get_session)):
 @login_required
 @role_required("Administrator")
 async def new_user(request: Request):
-    return templates.TemplateResponse("admin/user_form.html", {"request": request})
+    return templates.TemplateResponse("gebruikers_form.html", {"request": request})
 
 @router.post("/new")
 @login_required
@@ -36,7 +36,7 @@ async def create_user(
     new_user = User(email=email, name=name, role=role, google_id=google_id)
     session.add(new_user)
     session.commit()
-    return RedirectResponse(url="/admin/users", status_code=303)
+    return RedirectResponse(url="/users", status_code=303)
 
 @router.get("/{user_id}/edit", response_class=HTMLResponse)
 @login_required
@@ -45,12 +45,13 @@ async def edit_user(request: Request, user_id: int, session: Session = Depends(g
     user = session.get(User, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="Gebruiker niet gevonden")
-    return templates.TemplateResponse("admin/user_form.html", {"request": request, "user": user})
+    return templates.TemplateResponse("gebruikers_form.html", {"request": request, "user": user})
 
 @router.post("/{user_id}/edit")
 @login_required
 @role_required("Administrator")
 async def update_user(
+    request: Request,
     user_id: int,
     email: str = Form(...),
     name: str = Form(...),
@@ -67,7 +68,7 @@ async def update_user(
     user.google_id = google_id
     session.add(user)
     session.commit()
-    return RedirectResponse(url="/admin/users", status_code=303)
+    return RedirectResponse(url="/users", status_code=303)
 
 @router.get("/{user_id}/delete")
 @login_required
@@ -78,4 +79,4 @@ async def delete_user(user_id: int, session: Session = Depends(get_session)):
         raise HTTPException(status_code=404, detail="Gebruiker niet gevonden")
     session.delete(user)
     session.commit()
-    return RedirectResponse(url="/admin/users", status_code=303)
+    return RedirectResponse(url="/users", status_code=303)

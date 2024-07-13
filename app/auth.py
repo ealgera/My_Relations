@@ -69,8 +69,9 @@ async def auth(request: Request, session: Session = Depends(get_session)):
         db_user = session.exec(select(User).where(User.email == email)).first()
         if db_user:
             app_logger.debug(f"User gevonden in database: {db_user}")
-            # Update last_login
+            # Update last_login en Google-ID
             db_user.last_login = datetime.utcnow()
+            db_user.google_id = google_id
             session.add(db_user)
             session.commit()
         else:
@@ -100,18 +101,6 @@ async def logout(request: Request):
     request.session.pop('user', None)
     app_logger.debug(f"Session after logout: {request.session}")
     return RedirectResponse(url='/')
-
-# def get_current_user(request: Request):
-#     user = request.session.get('user')
-#     if not user:
-#         raise HTTPException(status_code=401, detail="Not authenticated")
-#     return user
-
-# def login_required_redirect(request: Request):
-#     user = request.session.get('user')
-#     if not user:
-#         return None
-#     return user
 
 def login_required(func):
     @wraps(func)

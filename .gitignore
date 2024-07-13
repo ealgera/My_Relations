@@ -10,6 +10,7 @@ env/
 # Database
 *.db
 *.sqlite3
+*.old
 
 # IDE specific files
 .vscode/

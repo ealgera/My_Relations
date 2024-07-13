@@ -87,3 +87,6 @@ body {
 .event-details {
     flex: 1;
 }
+.dropdown-menu-dark {
+    background: linear-gradient(to bottom, #4169e1, #3a5fc8);
+}
