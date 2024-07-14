@@ -8,9 +8,15 @@ services:
     volumes:
       - .:/app
       - ./data:/data
+      - ./sessions:/sessions  # Voor persistente sessie-opslag
     environment:
       - DATABASE_URL=sqlite:////data/my_relations_app.db
+      - SECRET_KEY=your_secret_key_here  # Voor sessie encryptie
+      - GOOGLE_CLIENT_ID=your_google_client_id
+      - GOOGLE_CLIENT_SECRET=your_google_client_secret
+      - OAUTHLIB_INSECURE_TRANSPORT=1  # Alleen voor ontwikkeling, verwijder in productie
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
 volumes:
   data:
+  sessions:

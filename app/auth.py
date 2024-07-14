@@ -31,28 +31,6 @@ router = APIRouter()
 async def login(request: Request):
     redirect_uri = request.url_for('auth')
     return await oauth.google.authorize_redirect(request, redirect_uri)
-
-# @router.get('/auth')
-# async def auth(request: Request):
-#     try:
-#         token = await oauth.google.authorize_access_token(request)
-#         app_logger.debug(f"Received token: {token}")
-        
-#         if 'userinfo' in token:
-#             user = token['userinfo']
-#             app_logger.debug(f"User info from token: {user}")
-#         elif 'id_token' in token:
-#             user = await oauth.google.parse_id_token(request, token)
-#             app_logger.debug(f"Parsed user info from id_token: {user}")
-#         else:
-#             raise HTTPException(status_code=400, detail="User info not found in OAuth response")
-        
-#         request.session['user'] = dict(user)
-#         app_logger.debug(f"Session after setting user: {request.session}")
-#         return RedirectResponse(url='/')
-#     except Exception as e:
-#         app_logger.error(f"Error during authentication: {str(e)}", exc_info=True)
-#         raise HTTPException(status_code=500, detail=f"Authentication error: {str(e)}")
     
 @router.get('/auth')
 async def auth(request: Request, session: Session = Depends(get_session)):
