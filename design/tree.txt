@@ -1,82 +1,62 @@
 .
 ├── alembic
 │   ├── env.py
+│   ├── README
+│   ├── script.py.mako
 │   └── versions
+│       ├── 4c07830d0318_add_user_model.py
+├── alembic.ini
 ├── app
+│   ├── auth.py
 │   ├── config.py
 │   ├── database.py
 │   ├── __init__.py
+│   ├── logging_config.py
 │   ├── main.py
 │   ├── models
 │   │   ├── __init__.py
 │   │   ├── models.py
 │   │   └── __pycache__
-│   ├── __pycache__
-│   │   ├── database.cpython-312.pyc
-│   │   ├── __init__.cpython-312.pyc
-│   │   └── main.cpython-312.pyc
 │   └── routes
 │       ├── families.py
+│       ├── gebruikers.py
 │       ├── __init__.py
 │       ├── jubilea.py
+│       ├── jubileumtypes.py
 │       ├── personen.py
 │       ├── __pycache__
+│       ├── relaties.py
 │       └── relatietypes.py
 ├── create_db.py
-├── design
-│   ├── my_relations_functional.txt
-│   ├── PDFs
-│   │   ├── Relations-ERD v2.pdf
-│   │   ├── Relations_relatietypes_screens.pdf
-│   │   └── Relations-tree-and-files.pdf
-│   ├── Relations-ERD v2.png
-│   ├── Relations-tree-and-files.png
-│   ├── screenshots
-│   │   ├── Relations_dashboard.png
-│   │   ├── Relations_families.png
-│   │   ├── Relations_footer.png
-│   │   ├── Relations_jubilea.png
-│   │   ├── Relations_logo_menu.png
-│   │   ├── Relations_personen.png
-│   │   └── Relations_relatietypes.png
-│   └── Sources
-│       ├── create_db.py
-│       ├── custom.css
-│       ├── database.py
-│       ├── families.html
-│       ├── families.py
-│       ├── family_form.html
-│       ├── index.html
-│       ├── jubilea.html
-│       ├── jubilea.py
-│       ├── jubileum_form.html
-│       ├── logo.jpg
-│       ├── main.py
-│       ├── models.py
-│       ├── personen.html
-│       ├── personen.py
-│       ├── persoon_form.html
-│       ├── relatietype_form.html
-│       ├── relatietypes.html
-│       ├── relatietypes.py
-│       └── requirements.txt
+├── data
+│   └── my_relations_app.db
+├── docker-compose.yml
+├── Dockerfile
+├── logs
+│   └── app.log
 ├── my_relations_app.db
 ├── README.md
 ├── requirements.txt
-├── requirements.txt.new
 ├── static
 │   ├── css
 │   │   └── custom.css
 │   └── images
 │       └── logo.jpg
 ├── templates
+│   ├── familie_detail.html
 │   ├── families.html
 │   ├── family_form.html
+│   ├── gebruikers_form.html
+│   ├── gebruikers.html
 │   ├── index.html
 │   ├── jubilea.html
 │   ├── jubileum_form.html
+│   ├── jubileumtype_form.html
+│   ├── jubileumtypes.html
 │   ├── personen.html
 │   ├── persoon_form.html
+│   ├── relaties_form.html
+│   ├── relaties.html
 │   ├── relatietype_form.html
 │   └── relatietypes.html
 ├── test_relations.py
@@ -84,6 +64,6 @@
 │   ├── __init__.py
 │   ├── test_api.py
 │   └── test_database.py
-└── tree.txt
+└── tree_new.txt
 
-18 directories, 69 files
+22 directories, 93 files
