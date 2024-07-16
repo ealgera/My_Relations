@@ -1,5 +1,10 @@
 # Relatiebeheer Systeem
 
+## AI generated
+This system has been generated with Claude 3.5 Sonnet. Not in one go but in many sessions in which I told the AI what I wanted and it generated the code. I used a project but finaly had to use 3 project in which I had to start over again and 'feed' the AI with the data/code sofar. Thids was because of Claude prompt/token 'exhaustion'.
+I created the database model. I also told the AI to use Python, fastAPI and SQLModel. Also I wanted it to use bootstrap 5.
+The AI mainly generated 98% of the code. I provide about 2% of the code in the rare cases I wanted to be the code differently.
+
 ## Overzicht
 
 Het Relatiebeheer Systeem is een webapplicatie ontwikkeld met Python en FastAPI, ontworpen om families, personen, en hun onderlinge relaties te beheren. Het systeem biedt functionaliteiten voor het bijhouden van familiegegevens, persoonlijke informatie, jubilea, en verschillende soorten relaties tussen personen.
