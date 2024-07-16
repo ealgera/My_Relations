@@ -36,7 +36,7 @@ Het Relatiebeheer Systeem is een webapplicatie ontwikkeld met Python en FastAPI,
 1. Clone de repository:
    ```
    git clone https://github.com/ealgera/My_Relations.git
-   cd relatiebeheer-systeem
+   cd My_Relations
    ```
 
 2. Maak een `.env` bestand aan in de hoofddirectory en vul de volgende variabelen in:
@@ -47,13 +47,15 @@ Het Relatiebeheer Systeem is een webapplicatie ontwikkeld met Python en FastAPI,
    GOOGLE_CLIENT_SECRET=your_google_client_secret
    OAUTHLIB_INSECURE_TRANSPORT=1  # Alleen voor ontwikkeling, verwijder in productie
    ```
+   SECRET_KEY is produced in the app itself so you can comment this line.
 
 3. Build en start de Docker containers:
    ```
    docker-compose up --build
    ```
 
-4. De applicatie is nu toegankelijk via `http://localhost:8000`
+4. De applicatie is nu toegankelijk via `http://127.0.0.1:8000`
+   This id dependant on the Google project 'authorized redirect' uri. I used: http://127.0.0.1:8000/auth
 
 ## Gebruik
 
@@ -69,6 +71,13 @@ Na het opstarten van de applicatie:
    - Relatietypes
 
 3. Voeg nieuwe records toe, bewerk bestaande gegevens, of verwijder items waar nodig.
+   You can create an 'Administrator' by:
+   - if you've started the app once, than the database and tables are created;
+   - you must create a record in the SQL-database User table in /data;
+     - this record must contain the e-mail adres of the user with wich you want to log into the app (with Google);
+     - the role of this User must be 'Administrator';
+   - After that you can login with Google and a new menu item becomes visible with which you can create new users.
+   - This part of the app will be modified to make this more user friendly. 
 
 ## Ontwikkeling
 
