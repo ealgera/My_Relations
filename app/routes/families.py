@@ -4,7 +4,7 @@ from fastapi.templating import Jinja2Templates
 from sqlmodel import Session, select
 from ..database import get_session
 from ..models.models import Families, Personen
-from ..auth import login_required
+from ..auth import login_required, role_required
 
 router = APIRouter()
 
@@ -18,11 +18,13 @@ async def list_families(request: Request, session: Session = Depends(get_session
 
 @router.get("/new", response_class=HTMLResponse)
 @login_required
+@role_required(["Administrator", "Beheerder"])
 async def new_family(request: Request):
     return templates.TemplateResponse("family_form.html", {"request": request})
 
 @router.post("/new")
 @login_required
+@role_required(["Administrator", "Beheerder"])
 async def create_family(
     request: Request,
     familienaam: str = Form(...),
@@ -41,6 +43,7 @@ async def create_family(
 
 @router.get("/{family_id}/edit", response_class=HTMLResponse)
 @login_required
+@role_required(["Administrator", "Beheerder"])
 async def edit_family(request: Request, family_id: int, session: Session = Depends(get_session)):
     family = session.get(Families, family_id)
     if not family:
@@ -49,6 +52,7 @@ async def edit_family(request: Request, family_id: int, session: Session = Depen
 
 @router.post("/{family_id}/edit")
 @login_required
+@role_required(["Administrator", "Beheerder"])
 async def update_family(
     request: Request,
     family_id: int,
@@ -77,6 +81,7 @@ async def update_family(
 
 @router.get("/{family_id}/delete")
 @login_required
+@role_required(["Administrator", "Beheerder"])
 async def delete_family(request: Request, family_id: int, session: Session = Depends(get_session)):
     family = session.get(Families, family_id)
     if not family:

@@ -6,12 +6,16 @@ from .logging_config import app_logger
 from functools import wraps
 from sqlmodel import Session, select
 from .database import get_session
-from .models.models import User
+from .models.models import Gebruikers
 from datetime import datetime
-import os
+from config import get_settings
+from typing import List, Union
+# import os
 
-config = Config('.env')
-oauth = OAuth(config)
+settings = get_settings()
+
+# config = Config('.env')
+oauth = OAuth()
 
 CONF_URL = 'https://accounts.google.com/.well-known/openid-configuration'
 oauth.register(
@@ -21,8 +25,8 @@ oauth.register(
         'scope': 'openid email profile',
         'prompt': 'select_account'
     },
-    client_id=os.getenv('GOOGLE_CLIENT_ID'),
-    client_secret=os.getenv('GOOGLE_CLIENT_SECRET')
+    client_id     = settings.GOOGLE_CLIENT_ID, #  os.getenv('GOOGLE_CLIENT_ID'),
+    client_secret = settings.GOOGLE_CLIENT_SECRET
 )
 
 router = APIRouter()
@@ -44,7 +48,7 @@ async def auth(request: Request, session: Session = Depends(get_session)):
         app_logger.debug(f"User info from token: {user_info}")
         
         # Zoek de gebruiker in de database
-        db_user = session.exec(select(User).where(User.email == email)).first()
+        db_user = session.exec(select(Gebruikers).where(Gebruikers.email == email)).first()
         if db_user:
             app_logger.debug(f"User gevonden in database: {db_user}")
             # Update last_login en Google-ID
@@ -61,8 +65,8 @@ async def auth(request: Request, session: Session = Depends(get_session)):
         request.session['user'] = {
             'id': db_user.id,
             'email': db_user.email,
-            'name': db_user.name,
-            'role': db_user.role,
+            'name': db_user.naam,
+            'role': db_user.rol.naam,
             'google_id': db_user.google_id
         }
         app_logger.debug(f"Session after setting user: {request.session}")
@@ -89,15 +93,27 @@ def login_required(func):
         return await func(request, *args, **kwargs)
     return wrapper
 
-def role_required(role):
+def role_required(allowed_roles: Union[str, List[str]]):
     def decorator(func):
         @wraps(func)
-        async def wrapper(request: Request, *args, **kwargs):
+        async def wrapper(request, *args, **kwargs):
             user = request.session.get('user')
+            app_logger.debug(f"User in session: {user}")
             if not user:
                 raise HTTPException(status_code=303, detail="Not authenticated", headers={"Location": "/login"})
-            if user.get('role')!= role:
-                raise HTTPException(status_code=403, detail="Not authorized")
+            
+            user_role = user.get('role')
+            
+            if isinstance(allowed_roles, str):
+                allowed_roles_list = [allowed_roles]
+            else:
+                allowed_roles_list = allowed_roles
+            
+            if user_role not in allowed_roles_list:
+                response = RedirectResponse(url="/", status_code=302)
+                response.set_cookie(key="auth_error", value="Je bent niet geautoriseerd voor deze actie", max_age=30)
+                return response
+            
             return await func(request, *args, **kwargs)
         return wrapper
     return decorator

@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Relatiebeheer Systeem</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', path='/css/custom.css') }}">
+    <link rel ="stylesheet" href="{{ url_for('static', path='/css/custom.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel ="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -91,6 +91,11 @@
 
             <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 content">
                 {% block content %}
+                    {% if auth_error %}
+                        <div class="alert alert-danger" role="alert">
+                            {{ auth_error }}
+                        </div>
+                    {% endif %} 
                     <h2>Aankomende Gebeurtenissen</h2>
                     {% if upcoming_events %}
                         <ul class="list-group compact-list">

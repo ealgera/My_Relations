@@ -57,15 +57,24 @@ class Relaties(SQLModel, table=True):
     persoon2: Personen = Relationship(back_populates="relaties_als_persoon2", sa_relationship_kwargs={"foreign_keys": "[Relaties.persoon2_id]"})
     relatietype: Relatietypes = Relationship(back_populates="relaties")
 
-class User(SQLModel, table=True):
+class Rollen(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    naam: str = Field(index=True, unique=True)
+    
+    gebruikers: List["Gebruikers"] = Relationship(back_populates="rol")
+
+class Gebruikers(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     email: str = Field(unique=True, index=True)
-    name: str
-    google_id: str = Field(unique=True, index=True)  # Unieke identifier van Google
-    role: str = Field(default="user")
+    naam: str
+    google_id: str = Field(unique=True, index=True)
+    rol_id: Optional[int] = Field(default=None, foreign_key="rollen.id")
     is_active: bool = Field(default=True)
     created_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)
     last_login: Optional[datetime] = Field(default=None)
 
+    rol: Optional[Rollen] = Relationship(back_populates="gebruikers")
+
     class Config:
         arbitrary_types_allowed = True
+        

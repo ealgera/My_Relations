@@ -8,12 +8,12 @@ services:
       - ./data:/data
       - ./sessions:/sessions
     environment:
-      - DATABASE_URL=${DATABASE_URL:-sqlite:////data/my_relations_app.db}
+      # - DATABASE_URL=${DATABASE_URL:-sqlite:////data/my_relations_app.db}
       # - SECRET_KEY=${SECRET_KEY}
-      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
-      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
-      - OAUTHLIB_INSECURE_TRANSPORT=${OAUTHLIB_INSECURE_TRANSPORT:-0}
-    # command: uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --reload
+      # - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      # - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      # - OAUTHLIB_INSECURE_TRANSPORT=${OAUTHLIB_INSECURE_TRANSPORT:-0}
+      - .env
     command: sh -c "python init_db.py && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --reload"
 
 volumes:

@@ -12,7 +12,12 @@ from .routes import families, relatietypes, jubilea, personen, relaties, jubileu
 from .logging_config import app_logger
 from .auth import router as auth_router, login_required
 from starlette.middleware.sessions import SessionMiddleware
+from config import get_settings
+# from my_relations_app.config import get_settings
 import secrets
+
+settings = get_settings()
+# app_logger.debug(f"Settings: {settings}")
 
 app = FastAPI()
 
@@ -22,8 +27,8 @@ app.mount("/static", StaticFiles(directory=base_path / "static"), name="static")
 templates = Jinja2Templates(directory=base_path / "templates")
 
 # Voeg SessionMiddleware toe
-SECRET_KEY = secrets.token_urlsafe(32)  # Genereer een veilige random string voor de secret_key
-app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
+# SECRET_KEY = secrets.token_urlsafe(32)  # Genereer een veilige random string voor de secret_key
+app.add_middleware(SessionMiddleware, secret_key=settings.SECRET_KEY)
 
 # Inclusie van de diverse blueprints
 app.include_router(families.router, prefix="/families", tags=["families"])
@@ -76,10 +81,18 @@ def get_upcoming_events(session: Session):
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request, session: Session = Depends(get_session)):
     upcoming_events = get_upcoming_events(session)
-    return templates.TemplateResponse("index.html", {
-        "request": request,
-        "upcoming_events": upcoming_events
-    })                                                                                                                 
+    auth_error = request.cookies.get("auth_error") # Er is een cookie gezet (in auth.py) voor fout als niet correct geauthentiseerd
+
+    response = templates.TemplateResponse("index.html", {
+        "request"        : request,
+        "upcoming_events": upcoming_events,
+        "auth_error"     : auth_error
+    })   
+
+    if auth_error:
+        response.delete_cookie("auth_error")  # Verwijder de cookie na gebruik
+
+    return response                                                                                                              
 
 @app.get("/protected-route")
 @login_required

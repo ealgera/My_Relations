@@ -1,29 +1,39 @@
 {% extends "index.html" %}
-
 {% block content %}
-<h1>{% if user %}Gebruiker bewerken{% else %}Nieuwe gebruiker{% endif %}</h1>
+
+<h1>{% if gebruiker %}Gebruiker bewerken{% else %}Nieuwe gebruiker{% endif %}</h1>
+
 <form method="POST">
     <div class="mb-3">
         <label for="email" class="form-label">Email</label>
-        <input type="email" class="form-control" id="email" name="email" value="{{ user.email if user else '' }}" required>
+        <input type="email" class="form-control" id="email" name="email" value="{{ gebruiker.email if gebruiker else '' }}" required>
     </div>
+    
     <div class="mb-3">
-        <label for="name" class="form-label">Naam</label>
-        <input type="text" class="form-control" id="name" name="name" value="{{ user.name if user else '' }}" required>
+        <label for="naam" class="form-label">Naam</label>
+        <input type="text" class="form-control" id="naam" name="naam" value="{{ gebruiker.naam if gebruiker else '' }}" required>
     </div>
+    
     <div class="mb-3">
-        <label for="role" class="form-label">Rol</label>
-        <select class="form-select" id="role" name="role" required>
-            <option value="Gebruiker"     {% if user and user.role == 'Gebruiker'     %}selected{% endif %}>Gebruiker</option>
-            <option value="Beheerder"     {% if user and user.role == 'Beheerder'     %}selected{% endif %}>Beheerder</option>
-            <option value="Administrator" {% if user and user.role == 'Administrator' %}selected{% endif %}>Administrator</option>
+        <label for="rol_id" class="form-label">Rol</label>
+        <select class="form-select" id="rol_id" name="rol_id" required>
+            <option value="">Selecteer een rol</option>
+            {% for rol in rollen %}
+                <option value="{{ rol.id }}" {% if gebruiker and gebruiker.rol_id == rol.id %}selected{% endif %}>
+                    {{ rol.naam }}
+                </option>
+            {% endfor %}
         </select>
     </div>
+    
     <div class="mb-3">
         <label for="google_id" class="form-label">Google ID</label>
-        <input type="text" class="form-control" id="google_id" name="google_id" value="{{ user.google_id if user else '' }}" required>
+        <input type="text" class="form-control" id="google_id" name="google_id" value="{{ gebruiker.google_id if gebruiker else '' }}">
     </div>
+    
     <button type="submit" class="btn btn-primary">Opslaan</button>
-    <a href="{{ url_for('list_users') }}" class="btn btn-secondary">Annuleren</a>
 </form>
+
+<a href="{{ url_for('list_users') }}" class="btn btn-secondary mt-3">Annuleren</a>
+
 {% endblock %}

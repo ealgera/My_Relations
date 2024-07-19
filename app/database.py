@@ -1,19 +1,20 @@
 from sqlmodel import SQLModel, create_engine, Session
-import os
+# import os
+from config import get_settings
+from .logging_config import app_logger
 
-# Gebruik een omgevingsvariabele om te bepalen of we in test mode zijn
-is_test = os.getenv('TESTING', 'False').lower() == 'true'
+settings = get_settings()
+# app_logger.debug(f"Testmode is: {settings.TESTING}")
 
-if is_test:
+if settings.TESTING:
     DATABASE_URL = "sqlite:///./test.db"
 else:
-    DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./my_relations_app.db")
+    DATABASE_URL = settings.DATABASE_URL
 
-# Database URL (gebruik een omgevingsvariabele voor de productie)
-# DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./my_relations_app.db")
+# app_logger.debug(f"Database URL: {DATABASE_URL}")
 
 # Engine aanmaken
-engine = create_engine(DATABASE_URL, echo=True)
+engine = create_engine(DATABASE_URL, echo=settings.DEBUG)
 
 # Functie om de database tabellen aan te maken
 def create_db_and_tables():
