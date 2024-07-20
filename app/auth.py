@@ -39,7 +39,7 @@ async def login(request: Request):
 @router.get('/auth')
 async def auth(request: Request, session: Session = Depends(get_session)):
     token = await oauth.google.authorize_access_token(request)
-    app_logger.debug(f"Received token: {token}")
+    app_logger.debug(f"[AUTH] Received token: {token}")
 
     user_info = token.get('userinfo')
     if user_info:
