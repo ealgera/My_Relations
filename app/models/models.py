@@ -17,6 +17,7 @@ class Personen(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     voornaam: str
     achternaam: str
+    leeft: bool = Field(default=True, nullable=False)
     familie_id: Optional[int] = Field(default=None, foreign_key="families.id")
     
     familie: Optional[Families] = Relationship(back_populates="personen")
@@ -34,8 +35,8 @@ class Jubilea(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     jubileumdag: str
     omschrijving: Optional[str] = Field(default=None)
-    persoon_id: int = Field(foreign_key="personen.id")
-    # jubileumtype_id: int = Field(foreign_key="jubileumtypes.id")
+    # persoon_id: int = Field(foreign_key="personen.id")
+    persoon_id: Optional[int] = Field(default=None, foreign_key="personen.id")
     jubileumtype_id: Optional[int] = Field(foreign_key="jubileumtypes.id", nullable=True)
     
     persoon: "Personen" = Relationship(back_populates="jubilea")

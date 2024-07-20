@@ -44,9 +44,10 @@ async def create_persoon(
     voornaam: str = Form(...),
     achternaam: str = Form(...),
     familie_id: int = Form(...),
+    leeft: bool = Form(False),
     session: Session = Depends(get_session)
 ):
-    new_persoon = Personen(voornaam=voornaam, achternaam=achternaam, familie_id=familie_id)
+    new_persoon = Personen(voornaam=voornaam, achternaam=achternaam, familie_id=familie_id, leeft=leeft)
     session.add(new_persoon)
     session.commit()
     return RedirectResponse(url="/personen", status_code=303)
@@ -81,6 +82,7 @@ async def update_persoon(
     voornaam: str = Form(...),
     achternaam: str = Form(...),
     familie_id: int = Form(...),
+    leeft: bool = Form(False),
     session: Session = Depends(get_session)
 ):
     persoon = session.get(Personen, persoon_id)
@@ -90,6 +92,7 @@ async def update_persoon(
     persoon.voornaam = voornaam
     persoon.achternaam = achternaam
     persoon.familie_id = familie_id
+    persoon.leeft = leeft
 
     session.add(persoon)
     session.commit()

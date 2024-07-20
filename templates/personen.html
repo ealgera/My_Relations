@@ -27,7 +27,7 @@
                     {% if current_sort == 'familie' %}&#9660;{% endif %}
                 </a>
             </th>
-            <th>Acties</th>
+            <th>Status</th>
         </tr>
     </thead>
     <tbody>
@@ -36,6 +36,7 @@
             <td>{{ persoon.voornaam }}</td>
             <td>{{ persoon.achternaam }}</td>
             <td>{{ persoon.familie.familienaam if persoon.familie else 'N/A' }}</td>
+            <td>{% if persoon.leeft %}-{% else %}Overleden{% endif %}</td>
             <td>
                 <a href="/personen/{{ persoon.id }}/edit" class="btn btn-sm btn-primary">Bewerken</a>
                 <a href="/personen/{{ persoon.id }}/delete" class="btn btn-sm btn-danger" onclick="return confirm('Weet je zeker dat je deze persoon wilt verwijderen?')">Verwijderen</a>

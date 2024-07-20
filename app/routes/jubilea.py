@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Depends, Request, HTTPException, Form, Query
 from fastapi.responses import RedirectResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
-from sqlmodel import Session, select
+from sqlmodel import Session, select, func
 from ..database import get_session
 from ..models.models import Jubilea, Personen, Jubileumtypes
 from datetime import datetime
+from typing import Optional
 from ..logging_config import app_logger
 
 router = APIRouter()
@@ -17,16 +18,27 @@ async def list_jubilea(
     session: Session = Depends(get_session),
     sort: str = Query(None, description="Sorteer op: jubileumtype, jubileumdag, of persoon")
 ):
-    query = select(Jubilea).join(Personen).join(Jubileumtypes)
+    query = select(Jubilea, Jubileumtypes, Personen).outerjoin(Personen).join(Jubileumtypes)
     
     if sort == "jubileumtype":
         query = query.order_by(Jubileumtypes.naam)
     elif sort == "jubileumdag":
         query = query.order_by(Jubilea.jubileumdag)
     elif sort == "persoon":
-        query = query.order_by(Personen.voornaam, Personen.achternaam)
+        query = query.order_by(func.coalesce(Personen.voornaam, ''), func.coalesce(Personen.achternaam, ''))
     
-    jubilea = session.exec(query).all()
+    results = session.exec(query).all()
+    
+    jubilea = [
+        {
+            "id": jubileum.id,
+            "jubileumdag": jubileum.jubileumdag,
+            "omschrijving": jubileum.omschrijving,
+            "jubileumtype": jubileumtype.naam,
+            "persoon": f"{persoon.voornaam} {persoon.achternaam}" if persoon else None
+        }
+        for jubileum, jubileumtype, persoon in results
+    ]
     
     return templates.TemplateResponse("jubilea.html", {
         "request": request, 
@@ -55,7 +67,8 @@ async def create_jubileum(
     jubileumtype_id: int = Form(...),
     jubileumdag: str = Form(...),
     omschrijving: str = Form(None),
-    persoon_id: int = Form(...),
+    # persoon_id: int = Form(...),
+    persoon_id: Optional[int] = Form(None),
     session: Session = Depends(get_session)
 ):
     jubileumdag = datetime.strptime(jubileumdag, "%d-%m-%Y").strftime("%Y-%m-%d")
@@ -89,7 +102,8 @@ async def update_jubileum(
     jubileumtype_id: int = Form(...),
     jubileumdag: str = Form(...),
     omschrijving: str = Form(None),
-    persoon_id: int = Form(...),
+    persoon_id: Optional[int] = Form(None),
+    # persoon_id: int = Form(...),
     session: Session = Depends(get_session)
 ):
     jubileum = session.get(Jubilea, jubileum_id)

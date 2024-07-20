@@ -25,8 +25,8 @@
         <textarea class="form-control" id="omschrijving" name="omschrijving" rows="3">{{ jubileum.omschrijving if jubileum else '' }}</textarea>
     </div>
     <div class="mb-3">
-        <label for="persoon_id" class="form-label">Persoon</label>
-        <select class="form-select" id="persoon_id" name="persoon_id" required>
+        <label for="persoon_id" class="form-label">Persoon (optioneel)</label>
+        <select class="form-select" id="persoon_id" name="persoon_id">
             <option value="">Selecteer een persoon</option>
             {% for persoon in personen %}
                 <option value="{{ persoon.id }}" {% if jubileum and jubileum.persoon_id == persoon.id %}selected{% endif %}>

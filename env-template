@@ -1,0 +1,11 @@
+PORT=8000
+DATABASE_URL=sqlite:///./my_relations_app.db
+GOOGLE_CLIENT_ID=your client id
+GOOGLE_CLIENT_SECRET=your client secret
+
+# Hiermee is HTTP mogelijk ipv alleen HTTPS (bv callback function)
+# Wordt 'onder water' ge-checked door de authlib module
+OAUTHLIB_INSECURE_TRANSPORT=1
+
+# Wordt gebruikt om de sessie te versleutelen. Gebeurt nu in de code, main.py
+# SECRET_KEY=your_secret_key_here

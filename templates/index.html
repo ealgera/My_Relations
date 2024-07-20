@@ -96,14 +96,13 @@
                             {{ auth_error }}
                         </div>
                     {% endif %} 
-                    <h2>Aankomende Gebeurtenissen</h2>
+                    <h2>Gebeurtenissen (tussen nu en 1 maand verder)</h2>
                     {% if upcoming_events %}
                         <ul class="list-group compact-list">
                         {% for event in upcoming_events %}
                             <li class="list-group-item d-flex align-items-center">
                                 <!-- Icoon selectie op basis van gebeurtenistype -->
                                 {% if event.event_type == "Geboortedag" %}
-                                    <!-- <span class="material-icons event-icon" style="color: #FF69B4;">cake &nbsp;</span> -->
                                     <span class="material-icons event-icon" style="color: #FF69B4; margin-right: 0.5em;">cake</span>
                                 {% elif event.event_type == "Huwelijk" %}
                                     <span class="material-icons event-icon" style="color: #4169E1; margin-right: 0.5em;">favorite</span>
@@ -125,7 +124,7 @@
                     {% else %}
                         <p class="alert alert-info">Geen aankomende gebeurtenissen gevonden voor deze en volgende maand.</p>
                     {% endif %}
-                    {% endblock %}
+                {% endblock %}
             </main>
         </div>
     </div>

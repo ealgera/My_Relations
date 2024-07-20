@@ -34,9 +34,13 @@
     <tbody>
         {% for jubileum in jubilea %}
         <tr>
-            <td>{{ jubileum.jubileumtype.naam }}</td>
+            <td>{{ jubileum.jubileumtype }}</td>
             <td>{{ jubileum.jubileumdag }}</td>
-            <td>{{ jubileum.persoon.voornaam }} {{ jubileum.persoon.achternaam }}</td>
+            {% if jubileum.persoon %}
+                <td>{{ jubileum.persoon }}</td>
+            {% else %}
+                <td>-</td>
+            {% endif %}
             <td>{{ jubileum.omschrijving }}</td>
             <td>
                 <a href="{{ url_for('edit_jubileum', jubileum_id=jubileum.id) }}" class="btn btn-sm btn-primary">Bewerken</a>

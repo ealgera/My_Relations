@@ -50,29 +50,37 @@ def get_upcoming_events(session: Session):
     end_date = today + relativedelta(months=1)
     
     jubilea = session.exec(
-        select(Jubilea)
-        .join(Personen)
+        select(Jubilea, Personen, Jubileumtypes)
+        .outerjoin(Personen)
+        .join(Jubileumtypes)
     ).all()
     
     upcoming_events = []
-    for jubileum in jubilea:
+    for jubileum, persoon, jubileumtype in jubilea:
         event_date = date.fromisoformat(jubileum.jubileumdag)
         this_year_event = event_date.replace(year=today.year)
         if this_year_event < today:
             this_year_event = this_year_event.replace(year=today.year + 1)
         
         if today <= this_year_event <= end_date:
-            # if jubileum.jubileumnaam == "Geboortedag":
-            if jubileum.jubileumtype.naam == "Geboortedag":
+            if jubileumtype.naam == "Geboortedag" and persoon:
                 age = this_year_event.year - event_date.year
-                event_description = f"wordt {age} jaar"
+                if persoon.leeft:
+                    event_description = f"wordt {age} jaar"
+                else:
+                    event_description = f"zou {age} jaar zijn geworden."
             else:
-                event_description = jubileum.jubileumtype.naam
+                event_description = jubileumtype.naam
+            
+            if persoon:
+                name = f"{persoon.voornaam} {persoon.achternaam}"
+            else:
+                name = jubileum.omschrijving or "Herdenking"
             
             upcoming_events.append({
-                "name": f"{jubileum.persoon.voornaam} {jubileum.persoon.achternaam}",
+                "name": name,
                 "date": this_year_event,
-                "event_type": jubileum.jubileumtype.naam,
+                "event_type": jubileumtype.naam,
                 "description": event_description
             })
     
