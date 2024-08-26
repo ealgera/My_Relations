@@ -1,4 +1,7 @@
-from fastapi import APIRouter, Depends, Request, HTTPException
+from fastapi import APIRouter, Depends, Request, HTTPException, status
+# from fastapi.security import OAuth2PasswordBearer
+# from jose import JWTError, jwt
+
 from starlette.responses import RedirectResponse
 from authlib.integrations.starlette_client import OAuth
 from starlette.config import Config
@@ -10,11 +13,9 @@ from .models.models import Gebruikers
 from datetime import datetime
 from config import get_settings
 from typing import List, Union
-# import os
 
 settings = get_settings()
 
-# config = Config('.env')
 oauth = OAuth()
 
 CONF_URL = 'https://accounts.google.com/.well-known/openid-configuration'
@@ -88,7 +89,12 @@ def login_required(func):
     @wraps(func)
     async def wrapper(request: Request, *args, **kwargs):
         user = request.session.get('user')
+        print(f"\nLogin Required")
+        print(f"Decorator args: {args}")
+        print(f"Decorator kwargs: {kwargs}")
+        app_logger.debug(f"Login Required - User in session: {user}")
         if not user:
+            app_logger.debug(f"Login Required - No User found in session")
             raise HTTPException(status_code=303, detail="Not authenticated", headers={"Location": "/login"})
         return await func(request, *args, **kwargs)
     return wrapper
@@ -98,8 +104,9 @@ def role_required(allowed_roles: Union[str, List[str]]):
         @wraps(func)
         async def wrapper(request, *args, **kwargs):
             user = request.session.get('user')
-            app_logger.debug(f"User in session: {user}")
+            app_logger.debug(f"Role Required - User in session: {user}")
             if not user:
+                app_logger.debug(f"Role Required - No User found in session")
                 raise HTTPException(status_code=303, detail="Not authenticated", headers={"Location": "/login"})
             
             user_role = user.get('role')
@@ -113,6 +120,40 @@ def role_required(allowed_roles: Union[str, List[str]]):
                 response = RedirectResponse(url="/", status_code=302)
                 response.set_cookie(key="auth_error", value="Je bent niet geautoriseerd voor deze actie", max_age=30)
                 return response
+            
+            app_logger.debug(f"Role Required - Role is correct!")
+            return await func(request, *args, **kwargs)
+        return wrapper
+    return decorator
+
+def get_current_user(request: Request):
+    user = request.session.get('user')
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    return user
+
+def owner_or_admin_required(model):
+    def decorator(func):
+        @wraps(func)
+        async def wrapper(request: Request, *args, **kwargs):
+            current_user = get_current_user(request)
+            session = next(get_session())
+            
+            id_param = next((value for key, value in kwargs.items() if key.endswith('_id')), None)
+            if id_param is None:
+                raise HTTPException(status_code=400, detail="Er is een probleem opgetreden bij het identificeren van het record.")
+            
+            item = session.get(model, id_param)
+            
+            if not item:
+                raise HTTPException(status_code=404, detail=f"Het gevraagde {model.__name__.lower()} record kon niet worden gevonden.")
+            
+            if item.created_by != current_user['id'] and current_user['role'] != "Administrator":
+                raise HTTPException(
+                    status_code=403, 
+                    detail=f"U heeft geen toestemming om dit {model.__name__.lower()} record te bewerken. "
+                           f"Alleen de maker van het record of een administrator kan wijzigingen aanbrengen."
+                )
             
             return await func(request, *args, **kwargs)
         return wrapper

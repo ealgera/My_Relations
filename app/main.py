@@ -8,13 +8,12 @@ from .database import get_session, create_db_and_tables, engine
 from .models.models import Families, Personen, Jubilea, Relatietypes, Relaties, Jubileumtypes
 from datetime import date
 from dateutil.relativedelta import relativedelta
-from .routes import families, relatietypes, jubilea, personen, relaties, jubileumtypes, gebruikers
+from .routes import families, relatietypes, jubilea, personen, relaties, jubileumtypes, gebruikers, admin
 from .logging_config import app_logger
 from .auth import router as auth_router, login_required
 from starlette.middleware.sessions import SessionMiddleware
 from config import get_settings
-# from my_relations_app.config import get_settings
-import secrets
+# import secrets
 
 settings = get_settings()
 # app_logger.debug(f"Settings: {settings}")
@@ -38,12 +37,21 @@ app.include_router(personen.router, prefix="/personen", tags=["personen"])
 app.include_router(relaties.router, prefix="/relaties", tags=["relaties"])
 app.include_router(jubileumtypes.router, prefix="/jubileumtypes", tags=["jubileumtypes"])
 app.include_router(gebruikers.router, prefix="/users", tags=["gebruikers"])
+app.include_router(admin.router, prefix="/admin", tags=["admin"])
 
 app.include_router(auth_router, tags=["auth"])
 
 # @app.on_event("startup")
 # async def startup_event():
     # create_db_and_tables()
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    return templates.TemplateResponse(
+        "error.html",
+        {"request": request, "detail": exc.detail, "status_code": exc.status_code},
+        status_code=exc.status_code
+    )
 
 def get_upcoming_events(session: Session):
     today = date.today()

@@ -73,14 +73,15 @@
                             <a class="nav-link" href="{{ url_for('list_relatietypes') }}">Relatietypes</a>
                         </li>
                         {% if request.session.get('user', {}).get('role') == 'Administrator' %}
-                        <li class="nav-item">
-                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                Administrator
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDropdown">
-                                <li><a class="dropdown-item" href="{{ url_for('list_users') }}">Gebruikers</a></li>
-                            </ul>
-                        </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Admin
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="adminDropdown">
+                                    <!-- Voeg hier andere admin opties toe -->
+                                    <li><a class="dropdown-item" href="{{ url_for('change_owner') }}">Eigenaar wijzigen</a></li>
+                                </ul>
+                            </li>
                         {% endif %}
                         <li class="nav-item">
                             <a class="nav-link" href="#">Configuratie</a>

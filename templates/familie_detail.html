@@ -24,6 +24,9 @@
 {% else %}
     <p>Deze familie heeft nog geen geregistreerde leden.</p>
 {% endif %}
+<div class="mb-4"><small><i>Familie aangemaakt door: {{ family.creator.naam }} ({{ family.creator.email }})</i></small></div>
+
+
 
 <a href="{{ url_for('list_families') }}" class="btn btn-secondary">Terug naar Families</a>
 {% endblock %}

@@ -3,8 +3,9 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlmodel import Session, select
 from ..database import get_session
-from ..models.models import Families, Personen
-from ..auth import login_required, role_required
+from ..models.models import Families, Personen, Gebruikers
+from ..auth import login_required, role_required, get_current_user
+from ..logging_config import app_logger
 
 router = APIRouter()
 
@@ -18,32 +19,35 @@ async def list_families(request: Request, session: Session = Depends(get_session
 
 @router.get("/new", response_class=HTMLResponse)
 @login_required
-@role_required(["Administrator", "Beheerder"])
+@role_required(["Administrator", "Beheerder", "Gebruiker"])
 async def new_family(request: Request):
     return templates.TemplateResponse("family_form.html", {"request": request})
 
 @router.post("/new")
 @login_required
-@role_required(["Administrator", "Beheerder"])
-async def create_family(
+@role_required(["Administrator", "Beheerder", "Gebruiker"])
+async def new_family(
     request: Request,
-    familienaam: str = Form(...),
-    straatnaam: str = Form(...),
-    huisnummer: str = Form(...),
+    familienaam : str     = Form(...),
+    straatnaam  : str     = Form(...),
+    huisnummer  : str     = Form(...),
     huisnummer_toevoeging: str = Form(None),
-    postcode: str = Form(...),
-    plaats: str = Form(...),
-    session: Session = Depends(get_session)
+    postcode    : str     = Form(...),
+    plaats      : str     = Form(...),
+    current_user: dict    = Depends(get_current_user),
+    session     : Session = Depends(get_session)
 ):
+    app_logger.debug(f"Create Family: {familienaam}, {straatnaam}, {huisnummer}, {huisnummer_toevoeging}, {postcode}, {plaats}")
     new_family = Families(familienaam=familienaam, straatnaam=straatnaam, huisnummer=huisnummer,
-                          huisnummer_toevoeging=huisnummer_toevoeging, postcode=postcode, plaats=plaats)
+                          huisnummer_toevoeging=huisnummer_toevoeging, postcode=postcode, plaats=plaats,
+                          created_by=current_user['id'])
     session.add(new_family)
     session.commit()
     return RedirectResponse(url="/families", status_code=303)
 
 @router.get("/{family_id}/edit", response_class=HTMLResponse)
 @login_required
-@role_required(["Administrator", "Beheerder"])
+@role_required(["Administrator", "Beheerder", "Gebruiker"])
 async def edit_family(request: Request, family_id: int, session: Session = Depends(get_session)):
     family = session.get(Families, family_id)
     if not family:
@@ -52,7 +56,7 @@ async def edit_family(request: Request, family_id: int, session: Session = Depen
 
 @router.post("/{family_id}/edit")
 @login_required
-@role_required(["Administrator", "Beheerder"])
+@role_required(["Administrator", "Beheerder", "Gebruiker"])
 async def update_family(
     request: Request,
     family_id: int,
@@ -62,11 +66,14 @@ async def update_family(
     huisnummer_toevoeging: str = Form(None),
     postcode: str = Form(...),
     plaats: str = Form(...),
+    current_user: Gebruikers = Depends(get_current_user),
     session: Session = Depends(get_session)
 ):
     family = session.get(Families, family_id)
     if not family:
         raise HTTPException(status_code=404, detail="Familie niet gevonden")
+    if family.created_by != current_user['id']: # and current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Geen toestemming om deze familie te bewerken")
     
     family.familienaam = familienaam
     family.straatnaam = straatnaam
@@ -97,10 +104,8 @@ async def family_detail(request: Request, family_id: int, session: Session = Dep
     if not family:
         raise HTTPException(status_code=404, detail="Familie niet gevonden")
     
-    members = session.exec(select(Personen).where(Personen.familie_id == family_id)).all()
-    
     return templates.TemplateResponse("familie_detail.html", {
         "request": request, 
         "family": family,
-        "members": members
+        "members": family.personen
     })

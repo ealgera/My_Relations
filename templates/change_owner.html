@@ -1,0 +1,91 @@
+{% extends "index.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Eigenaar Wijzigen</h2>
+    
+    <form method="get" class="mb-4">
+        <div class="row">
+            <div class="col-md-4">
+                <select name="model" class="form-select" onchange="this.form.submit()">
+                    <option value="">Selecteer Model</option>
+                    {% for model_name in models %}
+                        <option value="{{ model_name }}" {% if model_name == selected_model %}selected{% endif %}>
+                            {{ model_name|capitalize }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <input type="text" name="search" class="form-control" placeholder="Zoeken...">
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary">Filter</button>
+            </div>
+        </div>
+    </form>
+
+    {% if items %}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Naam/Omschrijving</th>
+                    <th>Huidige Eigenaar</th>
+                    <th>Actie</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item, owner in items %}
+                    <tr>
+                        <td>{{ item.id }}</td>
+                        <td>
+                            {% if selected_model == 'personen' %}
+                                {{ item.voornaam }} {{ item.achternaam }}
+                            {% elif selected_model == 'families' %}
+                                {{ item.familienaam }}
+                            {% elif selected_model == 'jubilea' %}
+                                {{ item.omschrijving }}
+                            {% endif %}
+                        </td>
+                        <td>{{ owner.email }}</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary" onclick="openChangeOwnerModal({{ item.id }})">
+                                Wijzig Eigenaar
+                            </button>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Paginering -->
+        <nav aria-label="Page navigation">
+            <ul class="pagination">
+                {% if page > 1 %}
+                    <li class="page-item">
+                        <a class="page-link" href="?model={{ selected_model }}&page={{ page - 1 }}">Vorige</a>
+                    </li>
+                {% endif %}
+                <li class="page-item">
+                    <a class="page-link" href="?model={{ selected_model }}&page={{ page + 1 }}">Volgende</a>
+                </li>
+            </ul>
+        </nav>
+    {% elif selected_model %}
+        <p>Geen items gevonden voor het geselecteerde model.</p>
+    {% endif %}
+</div>
+
+<!-- Modal voor het wijzigen van de eigenaar (implementatie volgt later) -->
+<div class="modal fade" id="changeOwnerModal" tabindex="-1" aria-hidden="true">
+    <!-- Modal inhoud hier -->
+</div>
+
+<script>
+function openChangeOwnerModal(itemId) {
+    // Implementatie voor het openen van de modal volgt later
+    console.log("Open modal voor item:", itemId);
+}
+</script>
+{% endblock %}

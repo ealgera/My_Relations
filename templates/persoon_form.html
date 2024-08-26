@@ -27,6 +27,9 @@
         <input type="checkbox" class="form-check-input" id="leeft" name="leeft" {% if not persoon or persoon.leeft %}checked{% endif %}>
         <label class="form-check-label" for="leeft">Leeft</label>
     </div>
+    {% if persoon %}
+        <div class="mb-4"><small><i>Persoon aangemaakt door: {{ persoon.creator.naam }} ({{ persoon.creator.email }})</i></small></div>
+    {% endif %}
     <button type="submit" class="btn btn-primary">Opslaan</button>
     <a href="{{ url_for('list_personen') }}" class="btn btn-secondary">Annuleren</a>
 </form>
@@ -43,9 +46,9 @@
             </tr>
         </thead>
         <tbody>
-            {% for jubileum, jubileumtype in jubilea %}
+            {% for jubileum in jubilea %}
             <tr>
-                <td>{{ jubileumtype.naam }}</td>
+                <td>{{ jubileum.jubileumtype.naam }}</td>
                 <td>{{ jubileum.jubileumdag }}</td>
                 <td>{{ jubileum.omschrijving }}</td>
             </tr>
