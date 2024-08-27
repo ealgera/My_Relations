@@ -2,7 +2,8 @@
 import os
 from sqlmodel import SQLModel, create_engine, Session, text
 from app.database import DATABASE_URL
-from app.models.models import User, Families, Personen, Jubilea, Relatietypes, Relaties, Rollen  # Import all your models
+# from app.models.models import User, Families, Personen, Jubilea, Relatietypes, Relaties, Rollen  # Import all your models
+# from app.models.models import Families, Personen, Jubilea, Relatietypes, Relaties, Rollen  # Import all your models
 from sqlalchemy.exc import OperationalError
 
 from app.logging_config import app_logger

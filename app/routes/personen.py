@@ -117,3 +117,31 @@ async def delete_persoon(persoon_id: int, session: Session = Depends(get_session
     session.delete(persoon)
     session.commit()
     return RedirectResponse(url="/personen", status_code=303)
+
+@router.get("/{persoon_id}", response_class=HTMLResponse)
+async def persoon_detail(request: Request, persoon_id: int, session: Session = Depends(get_session)):
+    persoon = session.get(Personen, persoon_id)
+    if not persoon:
+        raise HTTPException(status_code=404, detail="Persoon niet gevonden")
+    
+    # Combineer relaties waarin de persoon persoon1 of persoon2 is
+    alle_relaties = persoon.relaties_als_persoon1 + persoon.relaties_als_persoon2
+    
+    # Bereid de relatie-informatie voor
+    relaties_info = []
+    for relatie in alle_relaties:
+        gerelateerde_persoon = relatie.persoon2 if relatie.persoon1_id == persoon_id else relatie.persoon1
+        relaties_info.append({
+            "relatietype": relatie.relatietype,
+            "gerelateerde_persoon": gerelateerde_persoon
+        })
+    
+    # Haal jubilea op
+    jubilea = persoon.jubilea
+    
+    return templates.TemplateResponse("persoon_detail.html", {
+        "request": request,
+        "persoon": persoon,
+        "relaties": relaties_info,
+        "jubilea": jubilea
+    })

@@ -1,0 +1,31 @@
+{% extends "index.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>{{ persoon.voornaam }} {{ persoon.achternaam }}</h2>
+    
+    <h3>Familie</h3>
+    <p>{{ persoon.familie.familienaam }}</p>
+    
+    <h3>Relaties</h3>
+    <ul>
+    {% for relatie in relaties %}
+        <li>
+            {{ relatie.relatietype.relatienaam }} : 
+            <a href="{{ url_for('persoon_detail', persoon_id=relatie.gerelateerde_persoon.id) }}">
+                {{ relatie.gerelateerde_persoon.voornaam }} {{ relatie.gerelateerde_persoon.achternaam }}
+            </a>
+        </li>
+    {% endfor %}
+    </ul>
+    
+    <h3>Jubilea</h3>
+    <ul>
+    {% for jubileum in jubilea %}
+        <li>{{ jubileum.omschrijving }} - {{ jubileum.jubileumdag }}</li>
+    {% endfor %}
+    </ul>
+    
+    <a href="{{ url_for('edit_persoon', persoon_id=persoon.id) }}" class="btn btn-primary">Bewerken</a>
+</div>
+{% endblock %}
