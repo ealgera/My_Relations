@@ -1,11 +1,20 @@
 {% extends "index.html" %}
 
 {% block content %}
-<h1>Families</h1>
+<h1 class="mb-4">Families</h1>
 
-<table class="table">
+<a href="{{ url_for('new_family') }}" class="btn btn-primary mb-4 me-2">
+    <i class="material-icons align-middle me-2">add_circle</i>
+    <span class="align-middle">Nieuwe Familie</span>
+</a>
+<a href="{{ url_for('search_families') }}" class="btn btn-success mb-4">
+    <i class="material-icons align-middle me-2">search</i>
+    <span class="align-middle">Zoeken</span>
+</a>
+
+<table class="styled-table">
     <thead>
-        <tr>
+        <tr style="background-color: #007bff; color: #ffffff; font-size: 1.1em;">
             <th>Familienaam</th>
             <th>Adres</th>
             <th>Acties</th>
@@ -13,17 +22,54 @@
     </thead>
     <tbody>
         {% for family in families %}
-        <tr>
+        <tr style="font-size: 1.2em;">
             <td><a href="{{ url_for('family_detail', family_id=family.id) }}">{{ family.familienaam }}</a></td>
             <td>{{ family.straatnaam }} {{ family.huisnummer }}{% if family.huisnummer_toevoeging %} {{ family.huisnummer_toevoeging }}{% endif %}, {{ family.postcode }} {{ family.plaats }}</td>
             <td>
-                <a href="{{ url_for('edit_family', family_id=family.id) }}" class="btn btn-sm btn-primary">Bewerken</a>
-                <a href="{{ url_for('delete_family', family_id=family.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Weet je zeker dat je deze familie wilt verwijderen?')">Verwijderen</a>
+                <a href="{{ url_for('edit_family', family_id=family.id) }}" class="btn btn-sm btn-outline-primary" title="Bewerken">
+                    <i class="material-icons" style="font-size: 1.4em;">edit</i>
+                </a>
+                <a href="{{ url_for('delete_family', family_id=family.id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Weet je zeker dat je deze familie wilt verwijderen?')" title="Verwijderen">
+                    <i class="material-icons" style="font-size: 1.4em;">delete</i>
+                </a>
             </td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
 
-<a href="{{ url_for('new_family') }}" class="btn btn-primary">Nieuwe Familie Toevoegen</a>
+<style>
+.styled-table {
+    border-collapse: collapse;
+    margin: 25px 0;
+    font-size: 0.9em;
+    font-family: sans-serif;
+    min-width: 400px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+}
+
+.styled-table thead tr {
+    background-color: #009879;
+    color: #ffffff;
+    text-align: left;
+}
+
+.styled-table th,
+.styled-table td {
+    padding: 12px 15px;
+}
+
+.styled-table tbody tr {
+    border-bottom: 1px solid #dddddd;
+}
+
+.styled-table tbody tr:nth-of-type(even) {
+    background-color: #f3f3f3;
+}
+
+.styled-table tbody tr:last-of-type {
+    border-bottom: 2px solid #007bff;;
+}
+</style>
+
 {% endblock %}

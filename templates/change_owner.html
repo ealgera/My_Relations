@@ -29,17 +29,17 @@
         <table class="table table-striped">
             <thead>
                 <tr>
-                    <th>ID</th>
-                    <th>Naam/Omschrijving</th>
-                    <th>Huidige Eigenaar</th>
-                    <th>Actie</th>
+                    <th style="width: 5%;">ID</th>
+                    <th style="width: 50%;">Naam/Omschrijving</th>
+                    <th style="width: 25%;">Huidige Eigenaar</th>
+                    <th style="width: 20%;">Actie</th>
                 </tr>
             </thead>
             <tbody>
                 {% for item, owner in items %}
                     <tr>
                         <td>{{ item.id }}</td>
-                        <td>
+                        <td class="text-truncate" style="max-width: 200px;">
                             {% if selected_model == 'personen' %}
                                 {{ item.voornaam }} {{ item.achternaam }}
                             {% elif selected_model == 'families' %}
@@ -50,9 +50,18 @@
                         </td>
                         <td>{{ owner.email }}</td>
                         <td>
-                            <button class="btn btn-sm btn-primary" onclick="openChangeOwnerModal({{ item.id }})">
-                                Wijzig Eigenaar
-                            </button>
+                            <form method="POST" action="/admin/change-owner">
+                                <input type="hidden" name="model" value="{{ selected_model }}">
+                                <input type="hidden" name="item_id" value="{{ item.id }}">
+                                <select name="new_owner_id" class="form-select form-select-sm d-inline-block w-auto">
+                                    {% for user in users %}
+                                        <option value="{{ user.id }}" {% if user.id == owner.id %}selected{% endif %}>
+                                            {{ user.naam }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                <button type="submit" class="btn btn-sm btn-primary ms-2">Wijzig Eigenaar</button>
+                            </form>
                         </td>
                     </tr>
                 {% endfor %}

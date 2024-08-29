@@ -19,6 +19,7 @@ settings = get_settings()
 oauth = OAuth()
 
 CONF_URL = 'https://accounts.google.com/.well-known/openid-configuration'
+
 oauth.register(
     name='google',
     server_metadata_url=CONF_URL,

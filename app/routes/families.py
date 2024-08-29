@@ -17,6 +17,12 @@ async def list_families(request: Request, session: Session = Depends(get_session
     families = session.exec(select(Families)).all()
     return templates.TemplateResponse("families.html", {"request": request, "families": families})
 
+@router.get("/search", response_class=HTMLResponse)
+@login_required
+@role_required(["Administrator", "Beheerder", "Gebruiker"])
+async def search_families(request: Request):
+    return templates.TemplateResponse("family_form.html", {"request": request})
+
 @router.get("/new", response_class=HTMLResponse)
 @login_required
 @role_required(["Administrator", "Beheerder", "Gebruiker"])
