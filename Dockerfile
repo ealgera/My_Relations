@@ -17,7 +17,4 @@ COPY . .
 RUN mkdir /data /sessions && chown -R 1000:1000 /data /sessions
 
 # Maak de poort 8000 beschikbaar voor de wereld buiten deze container
-EXPOSE 8008
-
-# Run de applicatie
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8008"]
+EXPOSE 8000

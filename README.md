@@ -51,9 +51,8 @@ Het Relatiebeheer Systeem is een webapplicatie ontwikkeld met Python en FastAPI,
 
 3. Build en start de Docker containers:
    ```
-   docker-compose up --build
+   sudo docker compose up --build
    ```
-
 4. De applicatie is nu toegankelijk via `http://127.0.0.1:8000`
    This id dependant on the Google project 'authorized redirect' uri. I used: http://127.0.0.1:8000/auth
 
@@ -83,18 +82,22 @@ Na het opstarten van de applicatie:
 
 Voor lokale ontwikkeling zonder Docker:
 
-1. Maak een virtuele omgeving aan:
+1. Voer de bovenstaande eerste 2 stapen uit (clone en .env)
+
+2. Maak een virtuele omgeving aan:
    ```
    python -m venv venv
    source venv/bin/activate  # Op Windows gebruik: venv\Scripts\activate
    ```
 
-2. Installeer de vereiste packages:
+3. Installeer de vereiste packages:
    ```
    pip install -r requirements.txt
    ```
 
-3. Start de applicatie:
+4. Voeg een admin gebruiker toe met 'create_admin_and_roles.py'
+
+5. Start de applicatie:
    ```
    uvicorn app.main:app --reload
    ```

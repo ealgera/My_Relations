@@ -7,15 +7,18 @@ services:
       - .:/app
       - ./data:/data
       - ./sessions:/sessions
-    environment:
-      # - DATABASE_URL=${DATABASE_URL:-sqlite:////data/my_relations_app.db}
-      # - SECRET_KEY=${SECRET_KEY}
-      # - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
-      # - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
-      # - OAUTHLIB_INSECURE_TRANSPORT=${OAUTHLIB_INSECURE_TRANSPORT:-0}
+    env_file:
       - .env
-    command: sh -c "python init_db.py && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --reload"
+    command: >
+      sh -c "
+        echo \"ENV PORT: $${PORT}\" &&
+        python init_db.py &&
+        EXTERNAL_PORT=$${PORT:-8000} &&
+        echo \"Starting Uvicorn on internal port 8000 (mapped to external port $${EXTERNAL_PORT})\" &&
+        uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+      "
 
+# Named volumes
 volumes:
   data:
   sessions:
