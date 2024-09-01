@@ -1,11 +1,16 @@
 {% extends "index.html" %}
 
 {% block content %}
-<h1>Relaties</h1>
+<h1 class="mb-4">Relaties</h1>
 
-<table class="table">
+<a href="{{ url_for('new_relatie') }}" class="btn btn-primary mb-4 me-2">
+    <i class="material-icons align-middle me-2">add_circle</i>
+    <span class="align-middle">Nieuwe Relatie</span>
+</a>
+
+<table class="styled-table">
     <thead>
-        <tr>
+        <tr style="background-color: #007bff; color: #ffffff; font-size: 1.1em;">
             <th>Persoon 1</th>
             <th>Relatie</th>
             <th>Persoon 2</th>
@@ -14,18 +19,23 @@
     </thead>
     <tbody>
         {% for relatie in relaties %}
-        <tr>
+        <tr style="font-size: 1.2em;">
             <td>{{ relatie.persoon1.voornaam }} {{ relatie.persoon1.achternaam }}</td>
             <td>{{ relatie.relatietype.relatienaam }}</td>
             <td>{{ relatie.persoon2.voornaam }} {{ relatie.persoon2.achternaam }}</td>
             <td>
-                <a href="{{ url_for('edit_relatie', relatie_id=relatie.id) }}" class="btn btn-sm btn-primary">Bewerken</a>
-                <a href="{{ url_for('delete_relatie', relatie_id=relatie.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Weet je zeker dat je deze relatie wilt verwijderen?')">Verwijderen</a>
+                <a href="{{ url_for('edit_relatie', relatie_id=relatie.id) }}" class="btn btn-sm btn-outline-primary" title="Bewerken">
+                    <i class="material-icons" style="font-size: 1.4em;">edit</i>
+                </a>
+                <a href="{{ url_for('delete_relatie', relatie_id=relatie.id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Weet je zeker dat je deze relatie wilt verwijderen?')" title="Verwijderen">
+                    <i class="material-icons" style="font-size: 1.4em;">delete</i>
+                </a>
             </td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
 
-<a href="{{ url_for('new_relatie') }}" class="btn btn-primary">Nieuwe Relatie Toevoegen</a>
+
+
 {% endblock %}

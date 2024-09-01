@@ -130,7 +130,7 @@ async def update_jubileum(
 @router.get("/{jubileum_id}/delete", name="delete_jubileum")
 @login_required
 @role_required(["Administrator", "Beheerder"])
-async def delete_jubileum(jubileum_id: int, session: Session = Depends(get_session)):
+async def delete_jubileum(request: Request, jubileum_id: int, session: Session = Depends(get_session)):
     jubileum = session.get(Jubilea, jubileum_id)
     if not jubileum:
         raise HTTPException(status_code=404, detail="Jubileum niet gevonden")

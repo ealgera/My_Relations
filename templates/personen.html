@@ -1,50 +1,75 @@
 {% extends "index.html" %}
 
 {% block content %}
-<h1>Personen</h1>
+<h1 class="mb-4">Personen</h1>
 
-<table class="table">
+<a href="/personen/new" class="btn btn-primary mb-4 me-2">
+    <i class="material-icons align-middle me-2">add_circle</i>
+    <span class="align-middle">Nieuwe Persoon</span>
+</a>
+
+<table class="styled-table">
     <thead>
-        <tr>
-            <th>
-                <a href="/personen?sort=voornaam" 
-                   class="{% if current_sort == 'voornaam' %}text-primary{% endif %}">
-                    Voornaam
-                    {% if current_sort == 'voornaam' %}&#9660;{% endif %}
-                </a>
-            </th>
-            <th>
-                <a href="/personen?sort=achternaam"
-                   class="{% if current_sort == 'achternaam' %}text-primary{% endif %}">
-                    Achternaam
-                    {% if current_sort == 'achternaam' %}&#9660;{% endif %}
-                </a>
-            </th>
-            <th>
-                <a href="/personen?sort=familie"
-                   class="{% if current_sort == 'familie' %}text-primary{% endif %}">
-                    Familie
-                    {% if current_sort == 'familie' %}&#9660;{% endif %}
-                </a>
-            </th>
+        <tr style="background-color: #007bff; color: #ffffff; font-size: 1.1em;">
+            <th>Voornaam</th>
+            <th>Achternaam</th>
+            <th>Familie</th>
             <th>Status</th>
+            <th>Acties</th>
         </tr>
     </thead>
     <tbody>
         {% for persoon in personen %}
-        <tr>
+        <tr style="font-size: 1.2em;">
             <td>{{ persoon.voornaam }}</td>
             <td>{{ persoon.achternaam }}</td>
             <td>{{ persoon.familie.familienaam if persoon.familie else 'N/A' }}</td>
             <td>{% if persoon.leeft %}-{% else %}Overleden{% endif %}</td>
             <td>
-                <a href="/personen/{{ persoon.id }}/edit" class="btn btn-sm btn-primary">Bewerken</a>
-                <a href="/personen/{{ persoon.id }}/delete" class="btn btn-sm btn-danger" onclick="return confirm('Weet je zeker dat je deze persoon wilt verwijderen?')">Verwijderen</a>
+                <a href="/personen/{{ persoon.id }}/edit" class="btn btn-sm btn-outline-primary" title="Bewerken">
+                    <i class="material-icons" style="font-size: 1.4em;">edit</i>
+                </a>
+                <a href="/personen/{{ persoon.id }}/delete" class="btn btn-sm btn-outline-danger" onclick="return confirm('Weet je zeker dat je deze persoon wilt verwijderen?')" title="Verwijderen">
+                    <i class="material-icons" style="font-size: 1.4em;">delete</i>
+                </a>
             </td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
 
-<a href="/personen/new" class="btn btn-primary">Nieuwe Persoon Toevoegen</a>
+<style>
+.styled-table {
+    border-collapse: collapse;
+    margin: 25px 0;
+    font-size: 0.9em;
+    font-family: sans-serif;
+    min-width: 400px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+}
+
+.styled-table thead tr {
+    background-color: #009879;
+    color: #ffffff;
+    text-align: left;
+}
+
+.styled-table th,
+.styled-table td {
+    padding: 12px 15px;
+}
+
+.styled-table tbody tr {
+    border-bottom: 1px solid #dddddd;
+}
+
+.styled-table tbody tr:nth-of-type(even) {
+    background-color: #f3f3f3;
+}
+
+.styled-table tbody tr:last-of-type {
+    border-bottom: 2px solid #007bff;;
+}
+</style>
+
 {% endblock %}
