@@ -9,6 +9,8 @@ services:
       - ./sessions:/sessions
     env_file:
       - .env
+    environment:
+      - FORWARDED_ALLOW_IPS=*
     command: >
       sh -c "
         echo \"ENV PORT: $${PORT}\" &&

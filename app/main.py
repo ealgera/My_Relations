@@ -12,6 +12,7 @@ from .routes import families, relatietypes, jubilea, personen, relaties, jubileu
 from .logging_config import app_logger
 from .auth import router as auth_router, login_required
 from starlette.middleware.sessions import SessionMiddleware
+from fastapi.middleware.cors import CORSMiddleware
 from config import get_settings
 # import secrets
 
@@ -28,6 +29,13 @@ templates = Jinja2Templates(directory=base_path / "templates")
 # Voeg SessionMiddleware toe
 # SECRET_KEY = secrets.token_urlsafe(32)  # Genereer een veilige random string voor de secret_key
 app.add_middleware(SessionMiddleware, secret_key=settings.SECRET_KEY)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Pas dit aan naar je specifieke domein in productie
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Inclusie van de diverse blueprints
 app.include_router(families.router, prefix="/families", tags=["families"])
