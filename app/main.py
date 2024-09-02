@@ -10,14 +10,14 @@ from datetime import date
 from dateutil.relativedelta import relativedelta
 from .routes import families, relatietypes, jubilea, personen, relaties, jubileumtypes, gebruikers, admin
 from .logging_config import app_logger
-from .auth import router as auth_router, login_required
+from .auth import router as auth_router, login_required #, AuthMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 from fastapi.middleware.cors import CORSMiddleware
 from config import get_settings
 # import secrets
 
 settings = get_settings()
-# app_logger.debug(f"Settings: {settings}")
+app_logger.debug(f"Settings: {settings}")
 
 app = FastAPI()
 
@@ -27,8 +27,17 @@ app.mount("/static", StaticFiles(directory=base_path / "static"), name="static")
 templates = Jinja2Templates(directory=base_path / "templates")
 
 # Voeg SessionMiddleware toe
-# SECRET_KEY = secrets.token_urlsafe(32)  # Genereer een veilige random string voor de secret_key
-app.add_middleware(SessionMiddleware, secret_key=settings.SECRET_KEY)
+app_logger.debug("Adding SessionMiddleware")
+# app.add_middleware(SessionMiddleware, secret_key=settings.SECRET_KEY)
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=settings.SECRET_KEY,
+    session_cookie="my_relations_session",
+    max_age=3600,  # 1 hour
+    same_site="lax",
+    https_only=False,  # Set to True in production with HTTPS
+)
+app_logger.debug("Adding CORSMiddleware")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # Pas dit aan naar je specifieke domein in productie
@@ -36,6 +45,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+# app_logger.debug("Adding AuthMiddleware")
+# app.add_middleware(AuthMiddleware)
 
 # Inclusie van de diverse blueprints
 app.include_router(families.router, prefix="/families", tags=["families"])
@@ -60,6 +71,13 @@ async def http_exception_handler(request: Request, exc: HTTPException):
         {"request": request, "detail": exc.detail, "status_code": exc.status_code},
         status_code=exc.status_code
     )
+
+@app.get("/check-session")
+async def check_session(request: Request):
+    if 'session' in request.scope:
+        return {"session_exists": True, "session_data": request.session}
+    else:
+        return {"session_exists": False}
 
 def get_upcoming_events(session: Session):
     today = date.today()
@@ -103,20 +121,31 @@ def get_upcoming_events(session: Session):
     return sorted(upcoming_events, key=lambda x: x['date'])
 
 @app.get("/", response_class=HTMLResponse)
+async def welcome(request: Request):
+    app_logger.debug("Handling request to /")
+    if 'user' in request.session:
+        return RedirectResponse(url='/home', status_code=303)
+    return templates.TemplateResponse("welcome.html", {"request": request})                                                                                                             
+
+@app.get("/home", response_class=HTMLResponse)
+@login_required
 async def home(request: Request, session: Session = Depends(get_session)):
+    app_logger.debug("Handling request to /home")
+    
+    # Implementeer hier je bestaande home-logica
     upcoming_events = get_upcoming_events(session)
-    auth_error = request.cookies.get("auth_error") # Er is een cookie gezet (in auth.py) voor fout als niet correct geauthentiseerd
+    auth_error = request.cookies.get("auth_error")
 
     response = templates.TemplateResponse("index.html", {
-        "request"        : request,
+        "request": request,
         "upcoming_events": upcoming_events,
-        "auth_error"     : auth_error
+        "auth_error": auth_error
     })   
 
     if auth_error:
-        response.delete_cookie("auth_error")  # Verwijder de cookie na gebruik
+        response.delete_cookie("auth_error")
 
-    return response                                                                                                              
+    return response
 
 @app.get("/protected-route")
 @login_required
@@ -131,6 +160,20 @@ async def test_session(request: Request):
     request.session["count"] += 1
     return {"count": request.session["count"]}
 
+@app.get("/check-session")
+async def check_session(request: Request):
+    return {
+        "session_exists": "session" in request.scope,
+        "session_data": request.scope.get("session", {}),
+        "cookies": request.cookies
+    }
+
+@app.get("/debug-headers")
+async def debug_headers(request: Request):
+    return {
+        "headers": dict(request.headers),
+        "cookies": request.cookies
+    }
 
 if __name__ == "__main__":
     import uvicorn

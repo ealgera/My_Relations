@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, Request, HTTPException, status
 # from jose import JWTError, jwt
 
 from starlette.responses import RedirectResponse
+from starlette.middleware.base import BaseHTTPMiddleware
 from authlib.integrations.starlette_client import OAuth
 from starlette.config import Config
 from .logging_config import app_logger
@@ -32,6 +33,25 @@ oauth.register(
 )
 
 router = APIRouter()
+
+# class AuthMiddleware(BaseHTTPMiddleware):
+#     async def dispatch(self, request: Request, call_next):
+#         app_logger.debug(f"AuthMiddleware: Handling request to {request.url.path}")
+#         app_logger.debug(f"Request scope keys: {request.scope.keys()}")
+        
+#         # Lijst van routes die geen authenticatie vereisen
+#         open_routes = ['/login', '/auth', '/logout', '/static', '/test-session', '/check-session']
+        
+#         if request.url.path not in open_routes:
+#             app_logger.debug("Checking session")
+#             session = request.session
+#             app_logger.debug(f"Session content: {session}")
+#             if 'user' not in session:
+#                 app_logger.debug("User not in session, redirecting to login")
+#                 return RedirectResponse(url='/login', status_code=303)
+        
+#         response = await call_next(request)
+#         return response
 
 @router.get('/login')
 async def login(request: Request):
@@ -72,10 +92,9 @@ async def auth(request: Request, session: Session = Depends(get_session)):
             'google_id': db_user.google_id
         }
         app_logger.debug(f"Session after setting user: {request.session}")
-        return RedirectResponse(url='/')
+        return RedirectResponse(url='/home', status_code=303)  # Gewijzigd van '/' naar '/home'
     else:
-        raise HTTPException(status_code=400, detail="Kon gebruikersinformatie niet ophalen")
-    
+        raise HTTPException(status_code=400, detail="Kon gebruikersinformatie niet ophalen")    
 
 @router.get('/logout')
 async def logout(request: Request):
@@ -86,17 +105,27 @@ async def logout(request: Request):
     app_logger.debug(f"Session after logout: {request.session}")
     return RedirectResponse(url='/')
 
+# def login_required(func):
+#     @wraps(func)
+#     async def wrapper(request: Request, *args, **kwargs):
+#         user = request.session.get('user')
+#         print(f"\nLogin Required")
+#         print(f"Decorator args: {args}")
+#         print(f"Decorator kwargs: {kwargs}")
+#         app_logger.debug(f"Login Required - User in session: {user}")
+#         if not user:
+#             app_logger.debug(f"Login Required - No User found in session")
+#             raise HTTPException(status_code=303, detail="Not authenticated", headers={"Location": "/login"})
+#         return await func(request, *args, **kwargs)
+#     return wrapper
+
 def login_required(func):
     @wraps(func)
     async def wrapper(request: Request, *args, **kwargs):
-        user = request.session.get('user')
-        print(f"\nLogin Required")
-        print(f"Decorator args: {args}")
-        print(f"Decorator kwargs: {kwargs}")
-        app_logger.debug(f"Login Required - User in session: {user}")
-        if not user:
-            app_logger.debug(f"Login Required - No User found in session")
-            raise HTTPException(status_code=303, detail="Not authenticated", headers={"Location": "/login"})
+        app_logger.debug(f"Checking login for route: {request.url.path}")
+        if 'user' not in request.session:
+            app_logger.debug("User not in session, redirecting to login")
+            return RedirectResponse(url='/login', status_code=303)
         return await func(request, *args, **kwargs)
     return wrapper
 
