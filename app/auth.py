@@ -1,12 +1,10 @@
 from fastapi import APIRouter, Depends, Request, HTTPException, status
-# from fastapi.security import OAuth2PasswordBearer
-# from jose import JWTError, jwt
-
 from starlette.responses import RedirectResponse
+from fastapi.templating import Jinja2Templates
 from starlette.middleware.base import BaseHTTPMiddleware
 from authlib.integrations.starlette_client import OAuth
 from starlette.config import Config
-from .logging_config import app_logger
+from .logging_config import app_logger, log_info, log_debug
 from functools import wraps
 from sqlmodel import Session, select
 from .database import get_session
@@ -33,25 +31,7 @@ oauth.register(
 )
 
 router = APIRouter()
-
-# class AuthMiddleware(BaseHTTPMiddleware):
-#     async def dispatch(self, request: Request, call_next):
-#         app_logger.debug(f"AuthMiddleware: Handling request to {request.url.path}")
-#         app_logger.debug(f"Request scope keys: {request.scope.keys()}")
-        
-#         # Lijst van routes die geen authenticatie vereisen
-#         open_routes = ['/login', '/auth', '/logout', '/static', '/test-session', '/check-session']
-        
-#         if request.url.path not in open_routes:
-#             app_logger.debug("Checking session")
-#             session = request.session
-#             app_logger.debug(f"Session content: {session}")
-#             if 'user' not in session:
-#                 app_logger.debug("User not in session, redirecting to login")
-#                 return RedirectResponse(url='/login', status_code=303)
-        
-#         response = await call_next(request)
-#         return response
+templates = Jinja2Templates(directory="templates")
 
 @router.get('/login')
 async def login(request: Request):
@@ -61,71 +41,60 @@ async def login(request: Request):
 @router.get('/auth')
 async def auth(request: Request, session: Session = Depends(get_session)):
     token = await oauth.google.authorize_access_token(request)
-    app_logger.debug(f"[AUTH] Received token: {token}")
+    log_debug(f"[Auth] Received token: {token}")
 
     user_info = token.get('userinfo')
     if user_info:
         email = user_info['email']
         google_id = user_info['sub']
-        app_logger.debug(f"User info from token: {user_info}")
+        log_debug(f"[Auth] User info from token: {user_info}")
         
         # Zoek de gebruiker in de database
         db_user = session.exec(select(Gebruikers).where(Gebruikers.email == email)).first()
         if db_user:
-            app_logger.debug(f"User gevonden in database: {db_user}")
+            app_logger.debug(f"[Auth] User gevonden in database: {db_user}")
             # Update last_login en Google-ID
             db_user.last_login = datetime.utcnow()
             db_user.google_id = google_id
             session.add(db_user)
             session.commit()
+
+            # Sla relevante informatie op in de sessie
+            request.session['user'] = {
+                'id': db_user.id,
+                'email': db_user.email,
+                'name': db_user.naam,
+                'role': db_user.rol.naam,
+                'google_id': db_user.google_id
+            }
+            app_logger.debug(f"[Auth] Session after setting user: {request.session}")
+            return RedirectResponse(url='/home', status_code=303)
+
         else:
             # Als de gebruiker niet bestaat, stuur ze naar een "niet geautoriseerd" pagina
             app_logger.debug(f"User NIET gevonden in database: {db_user}")
-            return RedirectResponse(url='/not_authorized')
+            return RedirectResponse(url=f'/?error=not_authorized&email={email}', status_code=303)
         
-        # Sla relevante informatie op in de sessie
-        request.session['user'] = {
-            'id': db_user.id,
-            'email': db_user.email,
-            'name': db_user.naam,
-            'role': db_user.rol.naam,
-            'google_id': db_user.google_id
-        }
-        app_logger.debug(f"Session after setting user: {request.session}")
-        return RedirectResponse(url='/home', status_code=303)  # Gewijzigd van '/' naar '/home'
     else:
         raise HTTPException(status_code=400, detail="Kon gebruikersinformatie niet ophalen")    
 
 @router.get('/logout')
 async def logout(request: Request):
+    log_debug(f"[AUTH] handling logout...")
     user = request.session.get('user')
     if user:
         app_logger.info(f"User logged out: {user.get('email', 'Unknown')}")
     request.session.pop('user', None)
-    app_logger.debug(f"Session after logout: {request.session}")
+    log_debug(f"[AUTH] Session after logout: {request.session}")
     return RedirectResponse(url='/')
-
-# def login_required(func):
-#     @wraps(func)
-#     async def wrapper(request: Request, *args, **kwargs):
-#         user = request.session.get('user')
-#         print(f"\nLogin Required")
-#         print(f"Decorator args: {args}")
-#         print(f"Decorator kwargs: {kwargs}")
-#         app_logger.debug(f"Login Required - User in session: {user}")
-#         if not user:
-#             app_logger.debug(f"Login Required - No User found in session")
-#             raise HTTPException(status_code=303, detail="Not authenticated", headers={"Location": "/login"})
-#         return await func(request, *args, **kwargs)
-#     return wrapper
 
 def login_required(func):
     @wraps(func)
     async def wrapper(request: Request, *args, **kwargs):
-        app_logger.debug(f"Checking login for route: {request.url.path}")
+        log_debug(f"[AUTH] Login required - Checking login for route: {request.url.path}")
         if 'user' not in request.session:
-            app_logger.debug("User not in session, redirecting to login")
-            return RedirectResponse(url='/login', status_code=303)
+            log_debug("[AUTH] Login Required - No User found in session, redirecting to login")
+            raise HTTPException(status_code=303, detail="Not authenticated", headers={"Location": "/login"})
         return await func(request, *args, **kwargs)
     return wrapper
 
@@ -133,10 +102,11 @@ def role_required(allowed_roles: Union[str, List[str]]):
     def decorator(func):
         @wraps(func)
         async def wrapper(request, *args, **kwargs):
+            log_debug(f"[AUTH] Role required - Checking role for route: {request.url.path}")
             user = request.session.get('user')
-            app_logger.debug(f"Role Required - User in session: {user}")
+            log_debug(f"[AUTH] Role Required - User in session: {user}")
             if not user:
-                app_logger.debug(f"Role Required - No User found in session")
+                log_debug(f"[AUTH] Role Required - No User found in session")
                 raise HTTPException(status_code=303, detail="Not authenticated", headers={"Location": "/login"})
             
             user_role = user.get('role')
@@ -147,11 +117,12 @@ def role_required(allowed_roles: Union[str, List[str]]):
                 allowed_roles_list = allowed_roles
             
             if user_role not in allowed_roles_list:
+                log_debug(f"[AUTH] Role Required - Role is not allowed...")
                 response = RedirectResponse(url="/", status_code=302)
                 response.set_cookie(key="auth_error", value="Je bent niet geautoriseerd voor deze actie", max_age=30)
                 return response
             
-            app_logger.debug(f"Role Required - Role is correct!")
+            log_debug(f"[AUTH] Role Required - Role is allowed!")
             return await func(request, *args, **kwargs)
         return wrapper
     return decorator

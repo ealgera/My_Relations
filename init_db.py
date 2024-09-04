@@ -1,24 +1,18 @@
-# init_db.py
 import os
 from sqlmodel import SQLModel, create_engine, Session, text
 from app.database import DATABASE_URL
-# from app.models.models import User, Families, Personen, Jubilea, Relatietypes, Relaties, Rollen  # Import all your models
-# from app.models.models import Families, Personen, Jubilea, Relatietypes, Relaties, Rollen  # Import all your models
 from sqlalchemy.exc import OperationalError
 
-from app.logging_config import app_logger
-
-# Set up logging
-# logging.basicConfig(level=logging.INFO)
-# logger = logging.getLogger(__name__)
+from app.logging_config import app_logger, log_info
 
 def init_db():
     # Extract the database file path from the DATABASE_URL
     db_file = DATABASE_URL.replace("sqlite:///", "")
     
     # Check if the database file already exists
+    log_info("[INIT_DB] Checking Database...")
     if not os.path.exists(db_file):
-        app_logger.info("Database does not exist. Creating new database and tables...")
+        log_info("Database does not exist. Creating new database and tables...")
         engine = create_engine(DATABASE_URL)
         SQLModel.metadata.create_all(engine)
         app_logger.info("Database and tables created successfully.")

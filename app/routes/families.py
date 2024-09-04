@@ -12,7 +12,7 @@ router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
 @router.get("/", response_class=HTMLResponse)
-# @login_required
+@login_required
 async def list_families(request: Request, session: Session = Depends(get_session)):
     families = session.exec(select(Families)).all()
     return templates.TemplateResponse("families.html", {"request": request, "families": families})

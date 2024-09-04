@@ -14,6 +14,7 @@ router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
 @router.get("/", response_class=HTMLResponse, name="list_jubilea")
+@login_required
 async def list_jubilea(request: Request, session: Session = Depends(get_session),
     sort: str = Query(None, description="Sorteer op: jubileumtype, jubileumdag, of persoon")
 ):
@@ -46,6 +47,7 @@ async def list_jubilea(request: Request, session: Session = Depends(get_session)
     })
 
 @router.get("/new", name="new_jubileum")
+@login_required
 async def new_jubileum(request: Request, session: Session = Depends(get_session),
     persoon_id: int = Query(None)
 ):

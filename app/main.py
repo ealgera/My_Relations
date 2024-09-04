@@ -9,7 +9,7 @@ from .models.models import Families, Personen, Jubilea, Relatietypes, Relaties, 
 from datetime import date
 from dateutil.relativedelta import relativedelta
 from .routes import families, relatietypes, jubilea, personen, relaties, jubileumtypes, gebruikers, admin
-from .logging_config import app_logger
+from .logging_config import app_logger, log_info, log_debug
 from .auth import router as auth_router, login_required #, AuthMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 from fastapi.middleware.cors import CORSMiddleware
@@ -17,7 +17,8 @@ from config import get_settings
 # import secrets
 
 settings = get_settings()
-app_logger.debug(f"Settings: {settings}")
+log_info("[MAIN] Applicatie My_Relations gestart...")
+log_debug(f"[MAIN] Settings: {settings}")
 
 app = FastAPI()
 
@@ -27,7 +28,7 @@ app.mount("/static", StaticFiles(directory=base_path / "static"), name="static")
 templates = Jinja2Templates(directory=base_path / "templates")
 
 # Voeg SessionMiddleware toe
-app_logger.debug("Adding SessionMiddleware")
+log_info("[MAIN] Adding SessionMiddleware")
 # app.add_middleware(SessionMiddleware, secret_key=settings.SECRET_KEY)
 app.add_middleware(
     SessionMiddleware,
@@ -37,7 +38,7 @@ app.add_middleware(
     same_site="lax",
     https_only=False,  # Set to True in production with HTTPS
 )
-app_logger.debug("Adding CORSMiddleware")
+log_info("[MAIN] Adding CORSMiddleware")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # Pas dit aan naar je specifieke domein in productie
@@ -60,12 +61,21 @@ app.include_router(admin.router, prefix="/admin", tags=["admin"])
 
 app.include_router(auth_router, tags=["auth"])
 
-@app.on_event("startup")
-async def startup_event():
-    create_db_and_tables()
+# @app.on_event("startup")
+# async def startup_event():
+    # create_db_and_tables()
+
+# @app.on_event("startup")
+# async def print_routes():
+#     routes = [route for route in app.router.routes]
+#     for route in routes:
+#         print(f"Route name: {route.name}, path: {route.path}")
+
 
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request: Request, exc: HTTPException):
+    if exc.status_code == 303 and exc.detail == "Not authenticated":
+        return RedirectResponse(url='/')
     return templates.TemplateResponse(
         "error.html",
         {"request": request, "detail": exc.detail, "status_code": exc.status_code},
@@ -121,16 +131,24 @@ def get_upcoming_events(session: Session):
     return sorted(upcoming_events, key=lambda x: x['date'])
 
 @app.get("/", response_class=HTMLResponse)
-async def welcome(request: Request):
-    app_logger.debug("Handling request to /")
+async def welcome(
+    request: Request,
+    error: str = Query(None),
+    email: str = Query(None)
+):
+    log_info("[MAIN] Handling request to /")
     if 'user' in request.session:
         return RedirectResponse(url='/home', status_code=303)
-    return templates.TemplateResponse("welcome.html", {"request": request})                                                                                                             
+    return templates.TemplateResponse("welcome.html", {
+        "request": request,
+        "error": error,
+        "email": email
+    })                                                                                                             
 
 @app.get("/home", response_class=HTMLResponse)
 @login_required
 async def home(request: Request, session: Session = Depends(get_session)):
-    app_logger.debug("Handling request to /home")
+    log_info("[MAIN] Handling request to /home")
     
     # Implementeer hier je bestaande home-logica
     upcoming_events = get_upcoming_events(session)
@@ -174,6 +192,11 @@ async def debug_headers(request: Request):
         "headers": dict(request.headers),
         "cookies": request.cookies
     }
+
+@app.get("/test-logs-url")
+async def test_logs_url(request: Request):
+    return {"url": request.url_for("view_logs")}
+
 
 if __name__ == "__main__":
     import uvicorn

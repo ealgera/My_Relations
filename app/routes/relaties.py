@@ -5,6 +5,7 @@ from sqlmodel import Session, select
 from sqlalchemy.orm import aliased
 from ..database import get_session
 from ..models.models import Relaties, Personen, Relatietypes
+from ..auth import login_required, role_required, get_current_user
 
 from ..logging_config import app_logger
 
@@ -13,6 +14,7 @@ router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
 @router.get("/", response_class=HTMLResponse)
+@login_required
 async def list_relaties(request: Request, session: Session = Depends(get_session)):
     app_logger.debug("list_relaties functie is aangeroepen")
     Persoon1 = aliased(Personen)
@@ -38,9 +40,9 @@ async def list_relaties(request: Request, session: Session = Depends(get_session
 
     # Log de SQL query
     sql = query.compile(compile_kwargs={"literal_binds": True})
-    app_logger.debug(f"Generated SQL query: {sql}")
-    print(f"[debug] Relaties.py")
-    print(f"[debug] generated SQL query: {sql}\n")
+    app_logger.debug(f"List Relaties: Generated SQL query: {sql}")
+    # print(f"[debug] Relaties.py")
+    # print(f"[debug] generated SQL query: {sql}\n")
     
     results = session.exec(query).all()
     
@@ -67,12 +69,14 @@ async def list_relaties(request: Request, session: Session = Depends(get_session
     return templates.TemplateResponse("relaties.html", {"request": request, "relaties": relaties})
 
 @router.get("/new", response_class=HTMLResponse)
+@login_required
 async def new_relatie(request: Request, session: Session = Depends(get_session)):
     personen = session.exec(select(Personen)).all()
     relatietypes = session.exec(select(Relatietypes)).all()
     return templates.TemplateResponse("relaties_form.html", {"request": request, "personen": personen, "relatietypes": relatietypes})
 
 @router.post("/new")
+@login_required
 async def create_relatie(
     request: Request,
     persoon1_id: int = Form(...),
@@ -88,6 +92,7 @@ async def create_relatie(
     return RedirectResponse(url="/relaties", status_code=303)
 
 @router.get("/{relatie_id}/edit", response_class=HTMLResponse)
+@login_required
 async def edit_relatie(relatie_id: int, request: Request, session: Session = Depends(get_session)):
     relatie = session.get(Relaties, relatie_id)
     if not relatie:
@@ -97,6 +102,7 @@ async def edit_relatie(relatie_id: int, request: Request, session: Session = Dep
     return templates.TemplateResponse("relaties_form.html", {"request": request, "relatie": relatie, "personen": personen, "relatietypes": relatietypes})
 
 @router.post("/{relatie_id}/edit")
+@login_required
 async def update_relatie(
     relatie_id: int,
     persoon1_id: int = Form(...),
@@ -120,6 +126,7 @@ async def update_relatie(
     return RedirectResponse(url="/relaties", status_code=303)
 
 @router.get("/{relatie_id}/delete")
+@login_required
 async def delete_relatie(relatie_id: int, session: Session = Depends(get_session)):
     relatie = session.get(Relaties, relatie_id)
     if not relatie:

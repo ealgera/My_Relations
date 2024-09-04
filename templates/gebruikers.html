@@ -1,11 +1,22 @@
 {% extends "index.html" %}
-
 {% block content %}
-<h1>Gebruikers beheren</h1>
-<a href="{{ url_for('new_user') }}" class="btn btn-primary">Nieuwe gebruiker</a>
-<table class="table">
-    <thead>
-        <tr>
+
+<h1 class="mb-4">Gebruikers</h1>
+
+<a href="{{ url_for('add_account_form') }}" class="btn btn-primary mb-4 me-2">
+    <i class="material-icons align-middle">add_circle</i>
+    <span class="align-middle">Nieuwe Gebruiker</span>
+</a>
+<a href="#" class="btn btn-success mb-4">
+    <i class="material-icons align-middle">search</i>
+    <span class="align-middle">Zoeken</span>
+</a>
+
+<p>Aantal gebruikers: {{ gebruikers|length }}</p>
+
+<table class="styled-table">
+    <thead class="table-primary">
+        <tr style="background-color: #007bff; color: #ffffff; font-size: 1.1em;">
             <th>Naam</th>
             <th>Email</th>
             <th>Rol</th>
@@ -13,17 +24,26 @@
         </tr>
     </thead>
     <tbody>
-        {% for user in users %}
-        <tr>
-            <td>{{ user.naam }}</td>
-            <td>{{ user.email }}</td>                                                                           
-            <td>{{ user.rol.naam }}</td>
+        {% for item in gebruikers %}
+        <tr style="font-size: 1.2em;">
+            <td>{{ item.gebruiker.naam }}</td>
+            <td>{{ item.gebruiker.email }}</td>
+            <td>{{ item.rol.naam }}</td>
             <td>
-                <a href="{{ url_for('edit_user', user_id=user.id) }}" class="btn btn-sm btn-primary">Bewerken</a>
-                <a href="{{ url_for('delete_user', user_id=user.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Weet je zeker dat je deze gebruiker wilt verwijderen?')">Verwijderen</a>
+                <a href="{{ url_for('edit_account', user_id=item.gebruiker.id) }}" class="btn btn-sm btn-outline-primary">
+                    <i class="material-icons">edit</i>
+                </a>
+                <a href="{{ url_for('delete_account', user_id=item.gebruiker.id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Weet je zeker dat je deze gebruiker wilt verwijderen?')">
+                    <i class="material-icons">delete</i>
+                </a>
             </td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="4">Geen gebruikers gevonden.</td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
-{% endblock %}                                                                                             
+
+{% endblock %}

@@ -13,6 +13,7 @@ router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
 @router.get("/", response_class=HTMLResponse)
+@login_required
 async def list_personen(request: Request, session: Session = Depends(get_session),
     sort: str = Query(None, description="Sorteer op: voornaam, achternaam, of familie")
 ):
@@ -119,6 +120,7 @@ async def delete_persoon(persoon_id: int, session: Session = Depends(get_session
     return RedirectResponse(url="/personen", status_code=303)
 
 @router.get("/{persoon_id}", response_class=HTMLResponse)
+@login_required
 async def persoon_detail(request: Request, persoon_id: int, session: Session = Depends(get_session)):
     persoon = session.get(Personen, persoon_id)
     if not persoon:

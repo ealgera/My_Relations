@@ -27,7 +27,16 @@
     <div class="welcome-container">
         <div class="card welcome-card">
             <h1 class="card-title text-center mb-4">Welkom bij Relatiebeheer Systeem</h1>
+            
+            {% if error == 'not_authorized' %}
+            <div class="alert alert-danger" role="alert">
+                <p>Helaas, uw account ({{ email }}) is niet geautoriseerd om dit systeem te gebruiken.</p>
+                <p>Als u denkt dat dit een fout is, neem dan contact op met de systeembeheerder.</p>
+            </div>
+            {% else %}
             <p class="card-text text-center mb-4">Log in om toegang te krijgen tot het systeem.</p>
+            {% endif %}
+            
             <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg d-block">Inloggen met Google</a>
         </div>
     </div>

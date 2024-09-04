@@ -4,14 +4,15 @@ from functools import lru_cache
 from typing import Optional
 
 class Settings(BaseSettings):
-    DATABASE_URL: str = Field(default="sqlite:///./my_relations_app.db")
-    TESTING: bool = Field(default=False)
-    DEBUG: bool = Field(default=False)
-    SECRET_KEY: Optional[str] = Field(default=None)
-    GOOGLE_CLIENT_ID: Optional[str] = Field(default=None)
+    DATABASE_URL: str                   = Field(default="sqlite:///./my_relations_app.db")
+    # TESTING: bool                       = Field(default=False)
+    # DEBUG: bool                         = Field(default=False)
+    SECRET_KEY: Optional[str]           = Field(default=None)
+    GOOGLE_CLIENT_ID: Optional[str]     = Field(default=None)
     GOOGLE_CLIENT_SECRET: Optional[str] = Field(default=None)
-    OAUTHLIB_INSECURE_TRANSPORT: bool = Field(default=False)
-    PORT: int = Field(default=8000)
+    OAUTHLIB_INSECURE_TRANSPORT: bool   = Field(default=False)
+    PORT: int                           = Field(default=8000)
+    DEVELOPMENT: bool                   = Field(default=True) # True is value 1.
 
     class Config:
         env_file = ".env"

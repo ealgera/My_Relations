@@ -1,0 +1,12 @@
+{% extends "index.html" %}
+{% block content %}
+<div class="container mt-5">
+    <div class="alert alert-danger" role="alert">
+        <h4 class="alert-heading">Toegang geweigerd</h4>
+        <p>Helaas, uw account ({{ email }}) is niet geautoriseerd om dit systeem te gebruiken.</p>
+        <hr>
+        <p class="mb-0">Als u denkt dat dit een fout is, neem dan contact op met de systeembeheerder.</p>
+    </div>
+    <a href="{{ url_for('welcome') }}" class="btn btn-primary">Terug naar welkomstpagina</a>
+</div>
+{% endblock %}

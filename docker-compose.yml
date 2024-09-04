@@ -6,6 +6,7 @@ services:
     volumes:
       - .:/app
       - ./data:/data
+      - ./logs:/logs
       - ./sessions:/sessions
     env_file:
       - .env
@@ -23,4 +24,5 @@ services:
 # Named volumes
 volumes:
   data:
+  logs:
   sessions:

@@ -1,0 +1,30 @@
+{% extends "index.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Nieuwe Gebruiker Toevoegen</h2>
+    <form method="POST" action="{{ url_for('add_account') }}">
+        <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input type="email" class="form-control" id="email" name="email" required>
+        </div>
+        <div class="mb-3">
+            <label for="naam" class="form-label">Naam</label>
+            <input type="text" class="form-control" id="naam" name="naam" required>
+        </div>
+        <div class="mb-3">
+            <label for="rol_id" class="form-label">Rol</label>
+            <select class="form-select" id="rol_id" name="rol_id" required>
+                {% for rol in rollen %}
+                <option value="{{ rol.id }}">{{ rol.naam }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="google_id" class="form-label">Google ID</label>
+            <input type="text" class="form-control" id="google_id" name="google_id" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Gebruiker Toevoegen</button>
+        <a href="{{ url_for('list_users') }}" class="btn btn-secondary">Annuleren</a>
+    </form>
+</div>
+{% endblock %}
