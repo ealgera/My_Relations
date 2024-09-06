@@ -1,16 +1,55 @@
-from fastapi import APIRouter, Depends, Request, HTTPException, Form, Query
+from fastapi import APIRouter, Depends, Request, HTTPException, Form, Query, UploadFile, File
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlmodel import Session, select
 from ..database import get_session
 from ..models.models import Personen, Families, Gebruikers
 from ..auth import login_required, role_required, get_current_user, owner_or_admin_required
-from ..logging_config import app_logger
+from ..logging_config import log_info, log_debug, log_error
 from datetime import datetime
+from config import get_settings
+from PIL import Image
+import os
+# from pathlib import Path
 
-router = APIRouter()
+router    = APIRouter()
 
 templates = Jinja2Templates(directory="templates")
+settings  = get_settings()
+
+def process_photo(file: UploadFile, person_id: int):
+    file_extension = os.path.splitext(file.filename)[1]
+    filename = f"person_{person_id}{file_extension}"
+    filepath = settings.FOTO_DIR / filename
+    
+    log_debug(f"[Process_photo] Attempting to save file: {filepath}")
+    
+    try:
+        with Image.open(file.file) as img:
+            log_debug(f"[Process_photo] Image opened successfully")
+            img.thumbnail((300, 300))
+            log_debug(f"[Process_photo] Image resized")
+            img.save(filepath, optimize=True, quality=85)
+            log_debug(f"[Process_photo] Image saved successfully")
+        
+        # Extra controles
+        if os.path.exists(filepath):
+            log_debug(f"[Process_photo] File exists at {filepath}")
+            log_debug(f"[Process_photo] File size: {os.path.getsize(filepath)} bytes")
+        else:
+            log_error(f"[Process_photo] File does not exist at {filepath}")
+            
+        # Controleer de inhoud van de directory
+        log_debug(f"[Process_photo] Contents of {settings.FOTO_DIR}:")
+        for item in os.listdir(settings.FOTO_DIR):
+            log_debug(f"  - {item}")
+    
+    except Exception as e:
+        log_error(f"[Process_photo] Error saving image: {str(e)}")
+        raise
+    
+    log_debug(f"[Process_photo] Returning URL: /fotos/{filename}")
+    return f"/fotos/{filename}"
 
 @router.get("/", response_class=HTMLResponse)
 @login_required
@@ -46,17 +85,25 @@ async def new_persoon(request: Request, session: Session = Depends(get_session))
 @role_required(["Administrator", "Beheerder", "Gebruiker"])
 async def create_persoon(
     request     : Request,
-    voornaam    : str     = Form(...),
-    achternaam  : str     = Form(...),
-    familie_id  : int     = Form(...),
-    leeft       : bool    = Form(False),
-    current_user: dict    = Depends(get_current_user),
-    session     : Session = Depends(get_session)):
+    voornaam    : str        = Form(...),
+    achternaam  : str        = Form(...),
+    familie_id  : int        = Form(...),
+    leeft       : bool       = Form(False),
+    foto        : UploadFile = File(None),
+    current_user: dict       = Depends(get_current_user),
+    session     : Session    = Depends(get_session)):
 
     new_persoon = Personen(voornaam=voornaam, achternaam=achternaam, familie_id=familie_id,
         leeft=leeft,created_by=current_user['id'])
     session.add(new_persoon)
     session.commit()
+    session.refresh(new_persoon)
+
+    if foto:
+        foto_url = process_photo(foto, new_persoon.id)
+        new_persoon.foto_url = foto_url
+        session.commit()
+
     return RedirectResponse(url="/personen", status_code=303)
 
 @router.get("/{persoon_id}/edit", name="edit_persoon")
@@ -92,9 +139,25 @@ async def update_persoon(
     achternaam  : str        = Form(...),
     familie_id  : int        = Form(...),
     leeft       : bool       = Form(False),
+    foto        : UploadFile = File(None),
     current_user: Gebruikers = Depends(get_current_user),
     session     : Session    = Depends(get_session)
 ):
+    # Direct write test
+    test_file_path = settings.FOTO_DIR / "test_write.txt"
+    try:
+        with open(test_file_path, 'w') as f:
+            f.write("Test write")
+        log_debug(f"Successfully wrote test file to {test_file_path}")
+        os.remove(test_file_path)
+        log_debug(f"Successfully removed test file from {test_file_path}")
+    except Exception as e:
+        log_error(f"Error during write test: {str(e)}")
+
+    persoon = session.get(Personen, persoon_id)
+    if not persoon:
+        raise HTTPException(status_code=404, detail="Persoon niet gevonden")
+
     persoon = session.get(Personen, persoon_id)
     if not persoon:
         raise HTTPException(status_code=404, detail="Persoon niet gevonden")
@@ -104,7 +167,18 @@ async def update_persoon(
     persoon.voornaam   = voornaam
     persoon.achternaam = achternaam
     persoon.familie_id = familie_id
-    persoon.leeft = leeft
+    persoon.leeft      = leeft
+
+    if foto and foto.filename:
+        foto_url = process_photo(foto, persoon.id)
+        log_debug(f"Foto voor persoon {foto_url} - {persoon.id} aangepast")
+
+        # Als er een oude foto was, verwijder deze
+        # if persoon.foto_url:
+        #     old_foto_path = settings.FOTO_DIR / persoon.foto_url.split('/')[-1]
+        #     if old_foto_path.exists():
+        #         old_foto_path.unlink()
+        persoon.foto_url = foto_url
 
     session.add(persoon)
     session.commit()

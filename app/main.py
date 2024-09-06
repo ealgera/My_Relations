@@ -14,7 +14,7 @@ from .auth import router as auth_router, login_required #, AuthMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 from fastapi.middleware.cors import CORSMiddleware
 from config import get_settings
-# import secrets
+import os
 
 settings = get_settings()
 log_info("[MAIN] Applicatie My_Relations gestart...")
@@ -26,6 +26,29 @@ app = FastAPI()
 base_path = Path(__file__).parent.parent
 app.mount("/static", StaticFiles(directory=base_path / "static"), name="static")
 templates = Jinja2Templates(directory=base_path / "templates")
+
+# Monteer de foto directory
+foto_path = Path(settings.FOTO_DIR)
+print(f"FOTO_DIR path: {foto_path}")
+print(f"FOTO_DIR exists: {foto_path.exists()}")
+print(f"FOTO_DIR is directory: {foto_path.is_dir()}")
+print(f"FOTO_DIR permissions: {oct(os.stat(foto_path).st_mode)[-3:]}")
+print(f"Current process UID: {os.getuid()}")
+print(f"Current process GID: {os.getgid()}")
+
+if not foto_path.exists():
+    try:
+        foto_path.mkdir(parents=True, exist_ok=True)
+        print(f"Created FOTO_DIR: {foto_path}")
+    except Exception as e:
+        print(f"Error creating FOTO_DIR: {str(e)}")
+
+if os.access(foto_path, os.W_OK):
+    print(f"FOTO_DIR is writable: {foto_path}")
+else:
+    print(f"WARNING: FOTO_DIR is not writable: {foto_path}")
+# app.mount("/fotos", StaticFiles(directory=str(settings.FOTO_DIR)), name="fotos")
+app.mount("/fotos", StaticFiles(directory=settings.FOTO_DIR), name="fotos")
 
 # Voeg SessionMiddleware toe
 log_info("[MAIN] Adding SessionMiddleware")

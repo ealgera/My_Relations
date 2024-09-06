@@ -3,7 +3,7 @@
 {% block content %}
 <h1>{% if persoon %}Persoon Bewerken{% else %}Nieuwe Persoon{% endif %}</h1>
 
-<form method="POST">
+<form method="POST" enctype="multipart/form-data">
     <div class="mb-3">
         <label for="voornaam" class="form-label">Voornaam</label>
         <input type="text" class="form-control" id="voornaam" name="voornaam" value="{{ persoon.voornaam if persoon else '' }}" required>
@@ -27,6 +27,15 @@
         <input type="checkbox" class="form-check-input" id="leeft" name="leeft" {% if not persoon or persoon.leeft %}checked{% endif %}>
         <label class="form-check-label" for="leeft">Leeft</label>
     </div>
+    <div class="mb-3">
+        <label for="foto" class="form-label">Foto</label>
+        <input type="file" class="form-control" id="foto" name="foto" accept="image/*">
+    </div>
+    {% if persoon.foto_url %}
+        <div class="mb-3">
+            <img src="{{ persoon.foto_url }}" alt="{{ persoon.voornaam }} {{ persoon.achternaam }}" class="img-thumbnail" style="max-width: 200px;">
+        </div>
+    {% endif %}
     {% if persoon %}
         <div class="mb-4"><small><i>Persoon aangemaakt door: {{ persoon.creator.naam }} ({{ persoon.creator.email }})</i></small></div>
     {% endif %}
