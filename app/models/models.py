@@ -38,18 +38,19 @@ class Families(SQLModel, table=True):
     creator: Optional[Gebruikers] = Relationship(back_populates="created_families")
 
 class Personen(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    voornaam: str
+    id:         Optional[int] = Field(default=None, primary_key=True)
+    voornaam:   str
     achternaam: str
-    leeft: bool = Field(default=True, nullable=False)
+    leeft:      bool          = Field(default=True, nullable=False)
     familie_id: Optional[int] = Field(default=None, foreign_key="families.id")
-    
-    familie: Optional[Families] = Relationship(back_populates="personen")
-    jubilea: List["Jubilea"] = Relationship(back_populates="persoon")
-    relaties_als_persoon1: List["Relaties"] = Relationship(back_populates="persoon1", sa_relationship_kwargs={"foreign_keys": "[Relaties.persoon1_id]"})
-    relaties_als_persoon2: List["Relaties"] = Relationship(back_populates="persoon2", sa_relationship_kwargs={"foreign_keys": "[Relaties.persoon2_id]"})
-    created_by: Optional[int] = Field(default=None, foreign_key="gebruikers.id")
-    creator: Optional[Gebruikers] = Relationship(back_populates="created_personen")
+    foto_url:   Optional[str] = Field(default=None)
+
+    familie:               Optional[Families]   = Relationship(back_populates="personen")
+    jubilea:               List["Jubilea"]      = Relationship(back_populates="persoon")
+    relaties_als_persoon1: List["Relaties"]     = Relationship(back_populates="persoon1", sa_relationship_kwargs={"foreign_keys": "[Relaties.persoon1_id]"})
+    relaties_als_persoon2: List["Relaties"]     = Relationship(back_populates="persoon2", sa_relationship_kwargs={"foreign_keys": "[Relaties.persoon2_id]"})
+    created_by:            Optional[int]        = Field(default=None, foreign_key="gebruikers.id")
+    creator:               Optional[Gebruikers] = Relationship(back_populates="created_personen")
 
 class Jubileumtypes(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
