@@ -124,11 +124,18 @@
                                 <!-- Gebeurtenis details -->
                                 <div class="event-details">
                                     <strong>{{ event.date.strftime('%d-%m-%Y') }}</strong>: 
+                                    <a href="{{ url_for('edit_jubileum', jubileum_id=event.jubileum_id) }}">{{ event.name }}</a> - 
+                                    {{ event.description }}
                                     {{ event.name }} - {{ event.description }}
                                     {% if event.event_type != "Geboortedag" %}
                                         ({{ event.event_type }})
                                     {% endif %}
                                 </div>
+                                {% if event.foto_url %}
+                                    <div class="ms-3">
+                                        <img src="{{ event.foto_url }}" alt="{{ event.name }}" class="img-thumbnail" style="max-width: 100px; max-height: 100px;">
+                                    </div>
+                                {% endif %}
                             </li>
                         {% endfor %}
                         </ul>

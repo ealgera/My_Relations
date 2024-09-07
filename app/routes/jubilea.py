@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Request, HTTPException, Form, Query
+from fastapi import APIRouter, Depends, Request, HTTPException, Form, Query, UploadFile, File
 from fastapi.responses import RedirectResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
 from sqlmodel import Session, select, func
@@ -7,11 +7,42 @@ from ..models.models import Jubilea, Personen, Jubileumtypes
 from datetime import datetime
 from typing import Optional
 from ..auth import login_required, role_required, get_current_user
-from ..logging_config import app_logger
+from ..logging_config import app_logger, log_debug, log_error
+from config import get_settings
+from PIL import Image
+import os
 
 router = APIRouter()
 
 templates = Jinja2Templates(directory="templates")
+settings  = get_settings()
+
+def process_photo(file: UploadFile, jubileum_id: int):
+    file_extension = os.path.splitext(file.filename)[1]
+    filename = f"jubileum_{jubileum_id}{file_extension}"
+    filepath = settings.FOTO_DIR / filename
+    
+    log_debug(f"[Process_photo] Attempting to save jubileum file: {filepath}")
+    
+    try:
+        with Image.open(file.file) as img:
+            log_debug(f"[Process_photo] Jubileum image opened successfully")
+            img.thumbnail((300, 300))
+            log_debug(f"[Process_photo] Jubileum image resized")
+            img.save(filepath, optimize=True, quality=85)
+            log_debug(f"[Process_photo] Jubileum image saved successfully")
+        
+        if os.path.exists(filepath):
+            log_debug(f"[Process_photo] Jubileum file exists at {filepath}")
+            log_debug(f"[Process_photo] Jubileum file size: {os.path.getsize(filepath)} bytes")
+        else:
+            log_error(f"[Process_photo] Jubileum file does not exist at {filepath}")
+    
+    except Exception as e:
+        log_error(f"[Process_photo] Error saving jubileum image: {str(e)}")
+        raise
+    
+    return f"/fotos/{filename}"
 
 @router.get("/", response_class=HTMLResponse, name="list_jubilea")
 @login_required
@@ -69,15 +100,24 @@ async def create_jubileum(
     jubileumdag    : str     = Form(...),
     omschrijving   : str     = Form(None),
     persoon_id     : Optional[int] = Form(None),
+    foto           : UploadFile    = File(None),
     current_user   : dict    = Depends(get_current_user),
     session        : Session = Depends(get_session)
 ):
-    jubileumdag = datetime.strptime(jubileumdag, "%d-%m-%Y").strftime("%Y-%m-%d")
+    # jubileumdag = datetime.strptime(jubileumdag, "%d-%m-%Y").strftime("%Y-%m-%d")
+    jubileumdag = datetime.strptime(jubileumdag, "%Y-%m-%d").strftime("%Y-%m-%d")
     
     new_jubileum = Jubilea(jubileumtype_id=jubileumtype_id, jubileumdag=jubileumdag, omschrijving=omschrijving, 
         persoon_id=persoon_id, created_by=current_user['id'])
     session.add(new_jubileum)
     session.commit()
+    session.refresh(new_jubileum)
+
+    if foto and foto.filename:
+        foto_url = process_photo(foto, new_jubileum.id)
+        new_jubileum.foto_url = foto_url
+        session.commit()
+
     return RedirectResponse(url="/jubilea", status_code=303)
 
 @router.get("/{jubileum_id}/edit", name="edit_jubileum")
@@ -92,7 +132,8 @@ async def edit_jubileum(request: Request, jubileum_id: int, session: Session = D
     personen = session.exec(select(Personen)).all()
     jubileumtypes = session.exec(select(Jubileumtypes)).all()
 
-    formatted_date = datetime.strptime(jubileum.jubileumdag, "%Y-%m-%d").strftime("%d-%m-%Y")
+    # formatted_date = datetime.strptime(jubileum.jubileumdag, "%Y-%m-%d").strftime("%d-%m-%Y")
+    formatted_date = datetime.strptime(jubileum.jubileumdag, "%Y-%m-%d").strftime("%Y-%m-%d")
     
     return templates.TemplateResponse("jubileum_form.html", {
         "request": request, 
@@ -112,18 +153,30 @@ async def update_jubileum(
     jubileumdag    : str     = Form(...),
     omschrijving   : str     = Form(None),
     persoon_id     : Optional[int] = Form(None),
+    foto           : UploadFile    = File(None),
     session        : Session = Depends(get_session)
 ):
     jubileum = session.get(Jubilea, jubileum_id)
     if not jubileum:
         raise HTTPException(status_code=404, detail="Jubileum niet gevonden")
     
-    jubileumdag = datetime.strptime(jubileumdag, "%d-%m-%Y").strftime("%Y-%m-%d")
+    # jubileumdag = datetime.strptime(jubileumdag, "%d-%m-%Y").strftime("%Y-%m-%d")
+    jubileumdag = datetime.strptime(jubileumdag, "%Y-%m-%d").strftime("%Y-%m-%d")
     
     jubileum.jubileumtype_id = jubileumtype_id
     jubileum.jubileumdag     = jubileumdag
     jubileum.omschrijving    = omschrijving
     jubileum.persoon_id      = persoon_id
+
+    if foto and foto.filename:
+        foto_url = process_photo(foto, jubileum.id)
+        log_debug(f"Foto voor Jubileum {foto_url} - {jubileum.id} aangepast")
+        # Als er een oude foto was, verwijder deze
+        # if jubileum.foto_url:
+        #     old_foto_path = settings.FOTO_DIR / jubileum.foto_url.split('/')[-1]
+        #     if old_foto_path.exists():
+        #         old_foto_path.unlink()
+        jubileum.foto_url = foto_url
     
     session.add(jubileum)
     session.commit()

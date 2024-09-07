@@ -84,9 +84,9 @@ app.include_router(admin.router, prefix="/admin", tags=["admin"])
 
 app.include_router(auth_router, tags=["auth"])
 
-# @app.on_event("startup")
-# async def startup_event():
-    # create_db_and_tables()
+@app.on_event("startup")
+async def startup_event():
+    create_db_and_tables()
 
 # @app.on_event("startup")
 # async def print_routes():
@@ -111,6 +111,47 @@ async def check_session(request: Request):
         return {"session_exists": True, "session_data": request.session}
     else:
         return {"session_exists": False}
+
+# def get_upcoming_events(session: Session):
+#     today = date.today()
+#     end_date = today + relativedelta(months=1)
+    
+#     jubilea = session.exec(
+#         select(Jubilea, Personen, Jubileumtypes)
+#         .outerjoin(Personen)
+#         .join(Jubileumtypes)
+#     ).all()
+    
+#     upcoming_events = []
+#     for jubileum, persoon, jubileumtype in jubilea:
+#         event_date = date.fromisoformat(jubileum.jubileumdag)
+#         this_year_event = event_date.replace(year=today.year)
+#         if this_year_event < today:
+#             this_year_event = this_year_event.replace(year=today.year + 1)
+        
+#         if today <= this_year_event <= end_date:
+#             if jubileumtype.naam == "Geboortedag" and persoon:
+#                 age = this_year_event.year - event_date.year
+#                 if persoon.leeft:
+#                     event_description = f"wordt {age} jaar"
+#                 else:
+#                     event_description = f"zou {age} jaar zijn geworden."
+#             else:
+#                 event_description = jubileumtype.naam
+            
+#             if persoon:
+#                 name = f"{persoon.voornaam} {persoon.achternaam}"
+#             else:
+#                 name = jubileum.omschrijving or "Herdenking"
+            
+#             upcoming_events.append({
+#                 "name": name,
+#                 "date": this_year_event,
+#                 "event_type": jubileumtype.naam,
+#                 "description": event_description
+#             })
+    
+#     return sorted(upcoming_events, key=lambda x: x['date'])
 
 def get_upcoming_events(session: Session):
     today = date.today()
@@ -141,14 +182,18 @@ def get_upcoming_events(session: Session):
             
             if persoon:
                 name = f"{persoon.voornaam} {persoon.achternaam}"
+                foto_url = persoon.foto_url
             else:
                 name = jubileum.omschrijving or "Herdenking"
+                foto_url = jubileum.foto_url
             
             upcoming_events.append({
+                "jubileum_id": jubileum.id,
                 "name": name,
                 "date": this_year_event,
                 "event_type": jubileumtype.naam,
-                "description": event_description
+                "description": event_description,
+                "foto_url": foto_url
             })
     
     return sorted(upcoming_events, key=lambda x: x['date'])

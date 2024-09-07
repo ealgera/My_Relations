@@ -1,72 +1,101 @@
 {% extends "index.html" %}
-
 {% block content %}
-<h1>{% if persoon %}Persoon Bewerken{% else %}Nieuwe Persoon{% endif %}</h1>
+
+<h1 class="mb-4">{% if persoon %}Persoon Bewerken{% else %}Nieuwe Persoon{% endif %}</h1>
 
 <form method="POST" enctype="multipart/form-data">
-    <div class="mb-3">
-        <label for="voornaam" class="form-label">Voornaam</label>
-        <input type="text" class="form-control" id="voornaam" name="voornaam" value="{{ persoon.voornaam if persoon else '' }}" required>
-    </div>
-    <div class="mb-3">
-        <label for="achternaam" class="form-label">Achternaam</label>
-        <input type="text" class="form-control" id="achternaam" name="achternaam" value="{{ persoon.achternaam if persoon else '' }}" required>
-    </div>
-    <div class="mb-3">
-        <label for="familie_id" class="form-label">Familie</label>
-        <select class="form-select" id="familie_id" name="familie_id" required>
-            <option value="">Selecteer een familie</option>
-            {% for familie in families %}
-                <option value="{{ familie.id }}" {% if persoon and persoon.familie_id == familie.id %}selected{% endif %}>
-                    {{ familie.familienaam }}
-                </option>
-            {% endfor %}
-        </select>
-    </div>
-    <div class="mb-3 form-check">
-        <input type="checkbox" class="form-check-input" id="leeft" name="leeft" {% if not persoon or persoon.leeft %}checked{% endif %}>
-        <label class="form-check-label" for="leeft">Leeft</label>
-    </div>
-    <div class="mb-3">
-        <label for="foto" class="form-label">Foto</label>
-        <input type="file" class="form-control" id="foto" name="foto" accept="image/*">
-    </div>
-    {% if persoon.foto_url %}
-        <div class="mb-3">
-            <img src="{{ persoon.foto_url }}" alt="{{ persoon.voornaam }} {{ persoon.achternaam }}" class="img-thumbnail" style="max-width: 200px;">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label for="voornaam" class="form-label">Voornaam</label>
+                <input type="text" class="form-control" id="voornaam" name="voornaam" value="{{ persoon.voornaam if persoon else '' }}" required>
+            </div>
+            <div class="mb-3">
+                <label for="achternaam" class="form-label">Achternaam</label>
+                <input type="text" class="form-control" id="achternaam" name="achternaam" value="{{ persoon.achternaam if persoon else '' }}" required>
+            </div>
+            <div class="mb-3">
+                <label for="familie" class="form-label">Familie</label>
+                <select class="form-select" id="familie" name="familie_id" required>
+                    {% for familie in families %}
+                        <option value="{{ familie.id }}" {% if persoon and persoon.familie_id == familie.id %}selected{% endif %}>
+                            {{ familie.familienaam }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="mb-3 form-check">
+                <input type="checkbox" class="form-check-input" id="leeft" name="leeft" {% if persoon and persoon.leeft %}checked{% endif %}>
+                <label class="form-check-label" for="leeft">Leeft</label>
+            </div>
         </div>
-    {% endif %}
-    {% if persoon %}
-        <div class="mb-4"><small><i>Persoon aangemaakt door: {{ persoon.creator.naam }} ({{ persoon.creator.email }})</i></small></div>
-    {% endif %}
-    <button type="submit" class="btn btn-primary">Opslaan</button>
-    <a href="{{ url_for('list_personen') }}" class="btn btn-secondary">Annuleren</a>
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label for="foto" class="form-label">Foto</label>
+                <div class="custom-file">
+                    <input type="file" class="custom-file-input" id="foto" name="foto" accept="image/*" style="display: none;">
+                    <label class="btn btn-secondary" for="foto" id="fotoLabel">Kies bestand</label>
+                    <span id="fotoNaam" class="ml-2">Geen bestand gekozen</span>
+                </div>
+            </div>
+
+            {% if persoon and persoon.foto_url %}
+                <div class="mb-3">
+                    <img src="{{ persoon.foto_url }}" alt="{{ persoon.voornaam }} {{ persoon.achternaam }}" class="img-thumbnail" style="max-width: 100%; height: auto;">
+                </div>
+            {% endif %}
+        </div>
+
+    <div class="mt-3">
+        <button type="submit" class="btn btn-primary">Opslaan</button>
+        <a href="{{ url_for('list_personen') }}" class="btn btn-secondary">Annuleren</a>
+    </div>
 </form>
 
 {% if persoon %}
-<h2 class="mt-4">Jubilea</h2>
-{% if jubilea %}
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Jubileumtype</th>
-                <th>Datum</th>
-                <th>Omschrijving</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for jubileum in jubilea %}
-            <tr>
-                <td>{{ jubileum.jubileumtype.naam }}</td>
-                <td>{{ jubileum.jubileumdag }}</td>
-                <td>{{ jubileum.omschrijving }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-{% else %}
-    <p>Deze persoon heeft nog geen geregistreerde jubilea.</p>
+    <h2 class="mt-4">Jubilea</h2>
+    {% if jubilea %}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Jubileumtype</th>
+                    <th>Datum</th>
+                    <th>Omschrijving</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for jubileum in jubilea %}
+                    <tr>
+                        <td>{{ jubileum.jubileumtype.naam }}</td>
+                        <td>{{ jubileum.jubileumdag }}</td>
+                        <td>{{ jubileum.omschrijving }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Deze persoon heeft nog geen geregistreerde jubilea.</p>
+    {% endif %}
+    <div class="mt-3">
+        <a href="{{ url_for('new_jubileum') }}?persoon_id={{ persoon.id }}" class="btn btn-success">Nieuw Jubileum Toevoegen</a>
+    </div>
 {% endif %}
-<a href="{{ url_for('new_jubileum') }}?persoon_id={{ persoon.id }}" class="btn btn-success">Nieuw Jubileum Toevoegen</a>
-{% endif %}
+
+<script>
+    document.getElementById('foto').addEventListener('change', function(e) {
+        var fileName = e.target.files[0] ? e.target.files[0].name : "Geen bestand gekozen";
+        document.getElementById('fotoNaam').textContent = fileName;
+    });
+    </script>
+    
+    <style>
+    .custom-file {
+        display: flex;
+        align-items: center;
+    }
+    #fotoLabel {
+        margin-right: 10px;
+    }
+    </style>
+
 {% endblock %}

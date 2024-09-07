@@ -99,7 +99,7 @@ async def create_persoon(
     session.commit()
     session.refresh(new_persoon)
 
-    if foto:
+    if foto and foto.filename:
         foto_url = process_photo(foto, new_persoon.id)
         new_persoon.foto_url = foto_url
         session.commit()
@@ -173,11 +173,6 @@ async def update_persoon(
         foto_url = process_photo(foto, persoon.id)
         log_debug(f"Foto voor persoon {foto_url} - {persoon.id} aangepast")
 
-        # Als er een oude foto was, verwijder deze
-        # if persoon.foto_url:
-        #     old_foto_path = settings.FOTO_DIR / persoon.foto_url.split('/')[-1]
-        #     if old_foto_path.exists():
-        #         old_foto_path.unlink()
         persoon.foto_url = foto_url
 
     session.add(persoon)
