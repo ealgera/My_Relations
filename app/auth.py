@@ -49,24 +49,22 @@ async def auth(request: Request, session: Session = Depends(get_session)):
         google_id = user_info['sub']
         log_debug(f"[Auth] User info from token: {user_info}")
         
-        # Zoek de gebruiker in de database
-        db_user = session.exec(select(Gebruikers).where(Gebruikers.email == email)).first()
+        db_user = session.exec(select(Gebruikers).where(Gebruikers.email == email)).first()  # Zoek de gebruiker in de database
         if db_user:
             app_logger.debug(f"[Auth] User gevonden in database: {db_user}")
-            # Update last_login en Google-ID
-            db_user.last_login = datetime.utcnow()
+            db_user.last_login = datetime.utcnow()  # Update last_login en Google-ID
             db_user.google_id = google_id
             session.add(db_user)
             session.commit()
-
-            # Sla relevante informatie op in de sessie
-            request.session['user'] = {
+            
+            request.session['user'] = {    # Sla relevante informatie op in de sessie
                 'id': db_user.id,
                 'email': db_user.email,
                 'name': db_user.naam,
                 'role': db_user.rol.naam,
                 'google_id': db_user.google_id
             }
+            app_logger.debug(f"[Auth] User logged in: {request.session.get('email', 'Unknown')}")
             app_logger.debug(f"[Auth] Session after setting user: {request.session}")
             return RedirectResponse(url='/home', status_code=303)
 

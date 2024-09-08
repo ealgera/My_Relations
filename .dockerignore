@@ -1,5 +1,5 @@
 # Python
-__pycache__/
+__pycache__
 *.py[cod]
 *$py.class
 
@@ -15,7 +15,18 @@ env/
 *.sql
 
 # Data
-/data/fotos
+/data
+/design
+/sessions
+/tests
+
+# Docker
+.dockerignore
+Dockerfile
+docker-compose.yml
+
+# Git
+.gitignore
 
 # IDE specific files
 .vscode/
@@ -27,6 +38,7 @@ Thumbs.db
 
 # Logs
 *.log
+/logs
 
 # Environment variables
 .env

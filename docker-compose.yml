@@ -4,10 +4,10 @@ services:
     ports:
       - "${PORT:-8000}:8000"
     volumes:
-      - .:/app
+      # - .:/app
       - ./data:/data
       - ./logs:/logs
-      - ./sessions:/sessions
+      # - ./sessions:/sessions
     env_file:
       - .env
     environment:
@@ -25,4 +25,4 @@ services:
 volumes:
   data:
   logs:
-  sessions:
+  # sessions:

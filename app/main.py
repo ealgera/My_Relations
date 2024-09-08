@@ -29,12 +29,12 @@ templates = Jinja2Templates(directory=base_path / "templates")
 
 # Monteer de foto directory
 foto_path = Path(settings.FOTO_DIR)
-print(f"FOTO_DIR path: {foto_path}")
-print(f"FOTO_DIR exists: {foto_path.exists()}")
-print(f"FOTO_DIR is directory: {foto_path.is_dir()}")
-print(f"FOTO_DIR permissions: {oct(os.stat(foto_path).st_mode)[-3:]}")
-print(f"Current process UID: {os.getuid()}")
-print(f"Current process GID: {os.getgid()}")
+# print(f"FOTO_DIR path: {foto_path}")
+# print(f"FOTO_DIR exists: {foto_path.exists()}")
+# print(f"FOTO_DIR is directory: {foto_path.is_dir()}")
+# print(f"FOTO_DIR permissions: {oct(os.stat(foto_path).st_mode)[-3:]}")
+# print(f"Current process UID: {os.getuid()}")
+# print(f"Current process GID: {os.getgid()}")
 
 if not foto_path.exists():
     try:
@@ -47,7 +47,6 @@ if os.access(foto_path, os.W_OK):
     print(f"FOTO_DIR is writable: {foto_path}")
 else:
     print(f"WARNING: FOTO_DIR is not writable: {foto_path}")
-# app.mount("/fotos", StaticFiles(directory=str(settings.FOTO_DIR)), name="fotos")
 app.mount("/fotos", StaticFiles(directory=settings.FOTO_DIR), name="fotos")
 
 # Voeg SessionMiddleware toe
@@ -111,47 +110,6 @@ async def check_session(request: Request):
         return {"session_exists": True, "session_data": request.session}
     else:
         return {"session_exists": False}
-
-# def get_upcoming_events(session: Session):
-#     today = date.today()
-#     end_date = today + relativedelta(months=1)
-    
-#     jubilea = session.exec(
-#         select(Jubilea, Personen, Jubileumtypes)
-#         .outerjoin(Personen)
-#         .join(Jubileumtypes)
-#     ).all()
-    
-#     upcoming_events = []
-#     for jubileum, persoon, jubileumtype in jubilea:
-#         event_date = date.fromisoformat(jubileum.jubileumdag)
-#         this_year_event = event_date.replace(year=today.year)
-#         if this_year_event < today:
-#             this_year_event = this_year_event.replace(year=today.year + 1)
-        
-#         if today <= this_year_event <= end_date:
-#             if jubileumtype.naam == "Geboortedag" and persoon:
-#                 age = this_year_event.year - event_date.year
-#                 if persoon.leeft:
-#                     event_description = f"wordt {age} jaar"
-#                 else:
-#                     event_description = f"zou {age} jaar zijn geworden."
-#             else:
-#                 event_description = jubileumtype.naam
-            
-#             if persoon:
-#                 name = f"{persoon.voornaam} {persoon.achternaam}"
-#             else:
-#                 name = jubileum.omschrijving or "Herdenking"
-            
-#             upcoming_events.append({
-#                 "name": name,
-#                 "date": this_year_event,
-#                 "event_type": jubileumtype.naam,
-#                 "description": event_description
-#             })
-    
-#     return sorted(upcoming_events, key=lambda x: x['date'])
 
 def get_upcoming_events(session: Session):
     today = date.today()
@@ -232,6 +190,8 @@ async def home(request: Request, session: Session = Depends(get_session)):
         response.delete_cookie("auth_error")
 
     return response
+
+## Test Routes
 
 @app.get("/protected-route")
 @login_required
