@@ -4,10 +4,8 @@ services:
     ports:
       - "${PORT:-8000}:8000"
     volumes:
-      # - .:/app
-      - ./data:/data
-      - ./logs:/logs
-      # - ./sessions:/sessions
+      - ./data:/app/data
+      - ./logs:/app/logs
     env_file:
       - .env
     environment:
@@ -20,9 +18,3 @@ services:
         echo \"Starting Uvicorn on internal port 8000 (mapped to external port $${EXTERNAL_PORT})\" &&
         uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
       "
-
-# Named volumes
-volumes:
-  data:
-  logs:
-  # sessions:

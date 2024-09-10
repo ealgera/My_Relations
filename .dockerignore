@@ -15,10 +15,11 @@ env/
 *.sql
 
 # Data
-/data
-/design
-/sessions
-/tests
+data/
+logs/
+design/
+sessions/
+tests/
 
 # Docker
 .dockerignore
@@ -38,7 +39,6 @@ Thumbs.db
 
 # Logs
 *.log
-/logs
 
 # Environment variables
 .env
