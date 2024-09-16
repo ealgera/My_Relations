@@ -18,6 +18,7 @@ templates = Jinja2Templates(directory="templates")
 settings  = get_settings()
 
 def process_photo(file: UploadFile, person_id: int):
+    log_debug(f"[Process_photo] started...")
     file_extension = os.path.splitext(file.filename)[1]
     filename = f"person_{person_id}{file_extension}"
     filepath = settings.FOTO_DIR / filename
@@ -26,23 +27,23 @@ def process_photo(file: UploadFile, person_id: int):
     
     try:
         with Image.open(file.file) as img:
-            log_debug(f"[Process_photo] Image opened successfully")
+            # log_debug(f"[Process_photo] Image opened successfully")
             img.thumbnail((300, 300))
-            log_debug(f"[Process_photo] Image resized")
+            # log_debug(f"[Process_photo] Image resized")
             img.save(filepath, optimize=True, quality=85)
             log_debug(f"[Process_photo] Image saved successfully")
         
         # Extra controles
-        if os.path.exists(filepath):
-            log_debug(f"[Process_photo] File exists at {filepath}")
-            log_debug(f"[Process_photo] File size: {os.path.getsize(filepath)} bytes")
-        else:
-            log_error(f"[Process_photo] File does not exist at {filepath}")
+        # if os.path.exists(filepath):
+        #     log_debug(f"[Process_photo] File exists at {filepath}")
+        #     log_debug(f"[Process_photo] File size: {os.path.getsize(filepath)} bytes")
+        # else:
+        #     log_error(f"[Process_photo] File does not exist at {filepath}")
             
         # Controleer de inhoud van de directory
-        log_debug(f"[Process_photo] Contents of {settings.FOTO_DIR}:")
-        for item in os.listdir(settings.FOTO_DIR):
-            log_debug(f"  - {item}")
+        # log_debug(f"[Process_photo] Contents of {settings.FOTO_DIR}:")
+        # for item in os.listdir(settings.FOTO_DIR):
+        #     log_debug(f"  - {item}")
     
     except Exception as e:
         log_error(f"[Process_photo] Error saving image: {str(e)}")
@@ -133,7 +134,7 @@ async def edit_persoon(request: Request, persoon_id: int, session: Session = Dep
 @role_required(["Administrator", "Beheerder", "Gebruiker"])
 @owner_or_admin_required(Personen)
 async def update_persoon(
-    request: Request,
+    request     : Request,
     persoon_id  : int,
     voornaam    : str        = Form(...),
     achternaam  : str        = Form(...),
@@ -143,26 +144,17 @@ async def update_persoon(
     current_user: Gebruikers = Depends(get_current_user),
     session     : Session    = Depends(get_session)
 ):
-    # Direct write test
-    test_file_path = settings.FOTO_DIR / "test_write.txt"
-    try:
-        with open(test_file_path, 'w') as f:
-            f.write("Test write")
-        log_debug(f"Successfully wrote test file to {test_file_path}")
-        os.remove(test_file_path)
-        log_debug(f"Successfully removed test file from {test_file_path}")
-    except Exception as e:
-        log_error(f"Error during write test: {str(e)}")
-
-    persoon = session.get(Personen, persoon_id)
-    if not persoon:
-        raise HTTPException(status_code=404, detail="Persoon niet gevonden")
-
+    form_data = await request.form()
+    log_debug(f"[Update_Persoon] Request form data: {form_data}")
+    log_debug(f"[Update_Persoon] Foto info: filename={foto.filename if foto else 'None'}, content_type={foto.content_type if foto else 'None'}")
+    
     persoon = session.get(Personen, persoon_id)
     if not persoon:
         raise HTTPException(status_code=404, detail="Persoon niet gevonden")
     # if persoon.created_by != current_user['id']: # and current_user.role != "admin":
         # raise HTTPException(status_code=403, detail="Geen toestemming om deze familie te bewerken")
+
+    # session.refresh(persoon)
 
     persoon.voornaam   = voornaam
     persoon.achternaam = achternaam
@@ -171,7 +163,7 @@ async def update_persoon(
 
     if foto and foto.filename:
         foto_url = process_photo(foto, persoon.id)
-        log_debug(f"Foto voor persoon {foto_url} - {persoon.id} aangepast")
+        log_debug(f"[Update_Persoon] Foto voor persoon {foto_url} - {persoon.id} aangepast")
 
         persoon.foto_url = foto_url
 
@@ -216,3 +208,24 @@ async def persoon_detail(request: Request, persoon_id: int, session: Session = D
         "relaties": relaties_info,
         "jubilea": jubilea
     })
+
+@router.post("/{persoon_id}/delete_photo", name="delete_person_photo")
+@login_required
+@role_required(["Administrator", "Beheerder", "Gebruiker"])
+async def delete_person_photo(request: Request, persoon_id: int, session: Session = Depends(get_session)):
+    persoon = session.get(Personen, persoon_id)
+    log_debug(f"[Personen] - *** Verwijder foto bij {persoon.voornaam}, {persoon.achternaam} ***")
+    if not persoon:
+        raise HTTPException(status_code=404, detail="Persoon niet gevonden")
+    
+    if persoon.foto_url:  # Verwijder de foto van het bestandssysteem
+        foto_path = settings.FOTO_DIR / persoon.foto_url.split('/')[-1]
+        log_debug(f"Pad naar foto: {foto_path}")
+        if foto_path.exists():
+            log_debug(f"Pad naar foto bestaaat!")
+            os.remove(foto_path)
+        
+        persoon.foto_url = None  # Verwijder de foto URL ook uit de database
+        session.commit()
+    
+    return RedirectResponse(url=f"/personen/{persoon_id}/edit", status_code=303)

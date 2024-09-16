@@ -7,7 +7,7 @@ settings = get_settings()
 DATABASE_URL = settings.DATABASE_URL
 
 # Engine aanmaken
-engine = create_engine(DATABASE_URL, echo=settings.DEVELOPMENT)
+engine = create_engine(DATABASE_URL, echo=False) #echo=settings.DEVELOPMENT)
 
 # Functie om de database tabellen aan te maken
 def create_db_and_tables():

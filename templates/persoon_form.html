@@ -3,20 +3,22 @@
 
 <h1 class="mb-4">{% if persoon %}Persoon Bewerken{% else %}Nieuwe Persoon{% endif %}</h1>
 
-<form method="POST" enctype="multipart/form-data">
+<form method="post" enctype="multipart/form-data">
     <div class="row">
         <div class="col-md-6">
             <div class="mb-3">
                 <label for="voornaam" class="form-label">Voornaam</label>
                 <input type="text" class="form-control" id="voornaam" name="voornaam" value="{{ persoon.voornaam if persoon else '' }}" required>
             </div>
+
             <div class="mb-3">
                 <label for="achternaam" class="form-label">Achternaam</label>
                 <input type="text" class="form-control" id="achternaam" name="achternaam" value="{{ persoon.achternaam if persoon else '' }}" required>
             </div>
+
             <div class="mb-3">
-                <label for="familie" class="form-label">Familie</label>
-                <select class="form-select" id="familie" name="familie_id" required>
+                <label for="familie_id" class="form-label">Familie</label>
+                <select class="form-control" id="familie_id" name="familie_id" required>
                     {% for familie in families %}
                         <option value="{{ familie.id }}" {% if persoon and persoon.familie_id == familie.id %}selected{% endif %}>
                             {{ familie.familienaam }}
@@ -24,38 +26,40 @@
                     {% endfor %}
                 </select>
             </div>
+
             <div class="mb-3 form-check">
                 <input type="checkbox" class="form-check-input" id="leeft" name="leeft" {% if persoon and persoon.leeft %}checked{% endif %}>
                 <label class="form-check-label" for="leeft">Leeft</label>
             </div>
         </div>
-        <div class="col-md-6">
-            <div class="mb-3">
-                <label for="foto" class="form-label">Foto</label>
-                <div class="custom-file">
-                    <input type="file" class="custom-file-input" id="foto" name="foto" accept="image/*" style="display: none;">
-                    <label class="btn btn-secondary" for="foto" id="fotoLabel">Kies bestand</label>
-                    <span id="fotoNaam" class="ml-2">Geen bestand gekozen</span>
-                </div>
-            </div>
 
+        <div class="col-md-6">
             {% if persoon and persoon.foto_url %}
                 <div class="mb-3">
-                    <img src="{{ persoon.foto_url }}" alt="{{ persoon.voornaam }} {{ persoon.achternaam }}" class="img-thumbnail" style="max-width: 100%; height: auto;">
+                    <img src="{{ persoon.foto_url }}" alt="{{ persoon.voornaam }} {{ persoon.achternaam }}" class="img-thumbnail" style="max-width: 300px; max-height: 300px;">
+                </div>
+                <form action="{{ url_for('delete_person_photo', persoon_id=persoon.id) }}" method="post" class="mb-3">
+                    <button type="submit" class="btn btn-danger">Verwijder Foto</button>
+                </form>
+            {% else %}
+                <div class="mb-3">
+                    <label for="foto" class="form-label">Foto</label>
+                    <input type="file" class="form-control" id="foto" name="foto">
                 </div>
             {% endif %}
         </div>
+    </div>
 
     <div class="mt-3">
         <button type="submit" class="btn btn-primary">Opslaan</button>
-        <a href="{{ url_for('list_personen') }}" class="btn btn-secondary">Annuleren</a>
+        <a href="{{ request.url_for('list_personen') }}" class="btn btn-secondary">Annuleren</a>
     </div>
 </form>
 
 {% if persoon %}
     <h2 class="mt-4">Jubilea</h2>
     {% if jubilea %}
-        <table class="table table-striped">
+        <table class="table">
             <thead>
                 <tr>
                     <th>Jubileumtype</th>
@@ -76,26 +80,34 @@
     {% else %}
         <p>Deze persoon heeft nog geen geregistreerde jubilea.</p>
     {% endif %}
+
     <div class="mt-3">
         <a href="{{ url_for('new_jubileum') }}?persoon_id={{ persoon.id }}" class="btn btn-success">Nieuw Jubileum Toevoegen</a>
     </div>
 {% endif %}
 
 <script>
-    document.getElementById('foto').addEventListener('change', function(e) {
-        var fileName = e.target.files[0] ? e.target.files[0].name : "Geen bestand gekozen";
-        document.getElementById('fotoNaam').textContent = fileName;
-    });
-    </script>
-    
-    <style>
-    .custom-file {
-        display: flex;
-        align-items: center;
+document.addEventListener('DOMContentLoaded', function() {
+    var fotoInput = document.getElementById('foto');
+    var form = document.querySelector('form');
+
+    if (fotoInput) {
+        fotoInput.addEventListener('change', function(event) {
+            var file = event.target.files[0];
+            console.log('Geselecteerd bestand:', file);
+        });
     }
-    #fotoLabel {
-        margin-right: 10px;
+
+    if (form) {
+        form.addEventListener('submit', function(event) {
+            console.log('Form wordt verzonden');
+            var formData = new FormData(form);
+            for (var pair of formData.entries()) {
+                console.log(pair[0] + ': ' + (pair[1] instanceof File ? pair[1].name : pair[1]));
+            }
+        });
     }
-    </style>
+});
+</script>
 
 {% endblock %}

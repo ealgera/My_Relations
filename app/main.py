@@ -29,12 +29,6 @@ templates = Jinja2Templates(directory=base_path / "templates")
 
 # Monteer de foto directory
 foto_path = Path(settings.FOTO_DIR)
-# print(f"FOTO_DIR path: {foto_path}")
-# print(f"FOTO_DIR exists: {foto_path.exists()}")
-# print(f"FOTO_DIR is directory: {foto_path.is_dir()}")
-# print(f"FOTO_DIR permissions: {oct(os.stat(foto_path).st_mode)[-3:]}")
-# print(f"Current process UID: {os.getuid()}")
-# print(f"Current process GID: {os.getgid()}")
 
 if not foto_path.exists():
     try:

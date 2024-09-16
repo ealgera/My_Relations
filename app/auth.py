@@ -64,7 +64,7 @@ async def auth(request: Request, session: Session = Depends(get_session)):
                 'role': db_user.rol.naam,
                 'google_id': db_user.google_id
             }
-            app_logger.debug(f"[Auth] User logged in: {request.session.get('email', 'Unknown')}")
+            app_logger.debug(f"[Auth] User logged in: {request.session['user'].get('email', 'Unknown')}")
             app_logger.debug(f"[Auth] Session after setting user: {request.session}")
             return RedirectResponse(url='/home', status_code=303)
 
