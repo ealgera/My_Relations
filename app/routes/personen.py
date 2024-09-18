@@ -110,7 +110,7 @@ async def create_persoon(
 @router.get("/{persoon_id}/edit", name="edit_persoon")
 @login_required
 @role_required(["Administrator", "Beheerder", "Gebruiker"])
-@owner_or_admin_required(Personen)
+# @owner_or_admin_required(Personen)
 async def edit_persoon(request: Request, persoon_id: int, session: Session = Depends(get_session)):
     persoon = session.get(Personen, persoon_id)
     
@@ -134,45 +134,55 @@ async def edit_persoon(request: Request, persoon_id: int, session: Session = Dep
 @role_required(["Administrator", "Beheerder", "Gebruiker"])
 @owner_or_admin_required(Personen)
 async def update_persoon(
-    request     : Request,
-    persoon_id  : int,
-    voornaam    : str        = Form(...),
-    achternaam  : str        = Form(...),
-    familie_id  : int        = Form(...),
-    leeft       : bool       = Form(False),
-    foto        : UploadFile = File(None),
+    request: Request,
+    persoon_id: int,
+    action: str = Form(...),
+    voornaam: str = Form(None),
+    achternaam: str = Form(None),
+    familie_id: int = Form(None),
+    leeft: bool = Form(False),
+    foto: UploadFile = File(None),
     current_user: Gebruikers = Depends(get_current_user),
-    session     : Session    = Depends(get_session)
+    session: Session = Depends(get_session)
 ):
-    form_data = await request.form()
-    log_debug(f"[Update_Persoon] Request form data: {form_data}")
-    log_debug(f"[Update_Persoon] Foto info: filename={foto.filename if foto else 'None'}, content_type={foto.content_type if foto else 'None'}")
-    
+    log_debug(f"[Update_Persoon] started... Action: {action}")
     persoon = session.get(Personen, persoon_id)
     if not persoon:
         raise HTTPException(status_code=404, detail="Persoon niet gevonden")
-    # if persoon.created_by != current_user['id']: # and current_user.role != "admin":
-        # raise HTTPException(status_code=403, detail="Geen toestemming om deze familie te bewerken")
 
-    # session.refresh(persoon)
+    if action == "delete_photo":
+        if persoon.foto_url:
+            foto_path = settings.FOTO_DIR / persoon.foto_url.split('/')[-1]
+            if foto_path.exists():
+                os.remove(foto_path)
+            persoon.foto_url = None
+            session.commit()
+        return RedirectResponse(url=f"/personen/{persoon_id}/edit", status_code=303)
 
-    persoon.voornaam   = voornaam
-    persoon.achternaam = achternaam
-    persoon.familie_id = familie_id
-    persoon.leeft      = leeft
+    elif action == "update_persoon":
+        persoon.voornaam = voornaam
+        persoon.achternaam = achternaam
+        persoon.familie_id = familie_id
+        persoon.leeft = leeft
 
-    if foto and foto.filename:
-        foto_url = process_photo(foto, persoon.id)
-        log_debug(f"[Update_Persoon] Foto voor persoon {foto_url} - {persoon.id} aangepast")
+        if foto and foto.filename:
+            try:
+                foto_url = process_photo(foto, persoon.id)
+                log_debug(f"[Update_Persoon] Foto voor persoon {foto_url} - {persoon.id} aangepast")
+                persoon.foto_url = foto_url
+            except Exception as e:
+                log_error(f"Fout bij het updaten van de foto: {str(e)}")
 
-        persoon.foto_url = foto_url
+        session.add(persoon)
+        session.commit()
+        return RedirectResponse(url="/personen", status_code=303)
 
-    session.add(persoon)
-    session.commit()
-    return RedirectResponse(url="/personen", status_code=303)
+    else:
+        raise HTTPException(status_code=400, detail="Ongeldige actie")
 
 @router.get("/{persoon_id}/delete", name="delete_persoon")
-async def delete_persoon(persoon_id: int, session: Session = Depends(get_session)):
+@owner_or_admin_required(Personen)
+async def delete_persoon(request: Request, persoon_id: int, session: Session = Depends(get_session)):
     persoon = session.get(Personen, persoon_id)
     if not persoon:
         raise HTTPException(status_code=404, detail="Persoon niet gevonden")
@@ -212,6 +222,7 @@ async def persoon_detail(request: Request, persoon_id: int, session: Session = D
 @router.post("/{persoon_id}/delete_photo", name="delete_person_photo")
 @login_required
 @role_required(["Administrator", "Beheerder", "Gebruiker"])
+@owner_or_admin_required(Personen)
 async def delete_person_photo(request: Request, persoon_id: int, session: Session = Depends(get_session)):
     persoon = session.get(Personen, persoon_id)
     log_debug(f"[Personen] - *** Verwijder foto bij {persoon.voornaam}, {persoon.achternaam} ***")

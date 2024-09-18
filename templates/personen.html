@@ -24,7 +24,7 @@
             <td>{{ persoon.voornaam }}</td>
             <td>{{ persoon.achternaam }}</td>
             <td>{{ persoon.familie.familienaam if persoon.familie else 'N/A' }}</td>
-            <td>{% if persoon.leeft %}-{% else %}Overleden{% endif %}</td>
+            <td>{% if persoon.leeft %}●{% else %}†{% endif %}</td>
             <td>
                 <a href="/personen/{{ persoon.id }}/edit" class="btn btn-sm btn-outline-primary" title="Bewerken">
                     <i class="material-icons" style="font-size: 1.4em;">edit</i>

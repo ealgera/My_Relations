@@ -149,8 +149,9 @@ async def edit_jubileum(request: Request, jubileum_id: int, session: Session = D
 async def update_jubileum(
     request: Request,
     jubileum_id    : int,
-    jubileumtype_id: int     = Form(...),
-    jubileumdag    : str     = Form(...),
+    action         : str     = Form(...),
+    jubileumtype_id: int     = Form(None),
+    jubileumdag    : str     = Form(None),
     omschrijving   : str     = Form(None),
     persoon_id     : Optional[int] = Form(None),
     foto           : UploadFile    = File(None),
@@ -159,28 +160,35 @@ async def update_jubileum(
     jubileum = session.get(Jubilea, jubileum_id)
     if not jubileum:
         raise HTTPException(status_code=404, detail="Jubileum niet gevonden")
-    
-    # jubileumdag = datetime.strptime(jubileumdag, "%d-%m-%Y").strftime("%Y-%m-%d")
-    jubileumdag = datetime.strptime(jubileumdag, "%Y-%m-%d").strftime("%Y-%m-%d")
-    
-    jubileum.jubileumtype_id = jubileumtype_id
-    jubileum.jubileumdag     = jubileumdag
-    jubileum.omschrijving    = omschrijving
-    jubileum.persoon_id      = persoon_id
 
-    if foto and foto.filename:
-        foto_url = process_photo(foto, jubileum.id)
-        log_debug(f"Foto voor Jubileum {foto_url} - {jubileum.id} aangepast")
-        # Als er een oude foto was, verwijder deze
-        # if jubileum.foto_url:
-        #     old_foto_path = settings.FOTO_DIR / jubileum.foto_url.split('/')[-1]
-        #     if old_foto_path.exists():
-        #         old_foto_path.unlink()
-        jubileum.foto_url = foto_url
-    
-    session.add(jubileum)
-    session.commit()
-    return RedirectResponse(url="/jubilea", status_code=303)
+    if action == "delete_photo":
+        if jubileum.foto_url:
+            foto_path = settings.FOTO_DIR / jubileum.foto_url.split('/')[-1]
+            if foto_path.exists():
+                os.remove(foto_path)
+            jubileum.foto_url = None
+            session.commit()
+        return RedirectResponse(url=f"/jubilea/{jubileum_id}/edit", status_code=303)
+
+    elif action == "update_jubileum":
+        jubileumdag = datetime.strptime(jubileumdag, "%Y-%m-%d").strftime("%Y-%m-%d")
+        
+        jubileum.jubileumtype_id = jubileumtype_id
+        jubileum.jubileumdag     = jubileumdag
+        jubileum.omschrijving    = omschrijving
+        jubileum.persoon_id      = persoon_id
+
+        if foto and foto.filename:
+            foto_url = process_photo(foto, jubileum.id)
+            log_debug(f"Foto voor Jubileum {foto_url} - {jubileum.id} aangepast")
+            jubileum.foto_url = foto_url
+        
+        session.add(jubileum)
+        session.commit()
+        return RedirectResponse(url="/jubilea", status_code=303)
+
+    else:
+        raise HTTPException(status_code=400, detail="Ongeldige actie")
 
 @router.get("/{jubileum_id}/delete", name="delete_jubileum")
 @login_required

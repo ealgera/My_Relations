@@ -4,6 +4,7 @@
 <h1 class="mb-4">{% if persoon %}Persoon Bewerken{% else %}Nieuwe Persoon{% endif %}</h1>
 
 <form method="post" enctype="multipart/form-data">
+    <input type="hidden" name="action" value="update_persoon">
     <div class="row">
         <div class="col-md-6">
             <div class="mb-3">
@@ -38,13 +39,17 @@
                 <div class="mb-3">
                     <img src="{{ persoon.foto_url }}" alt="{{ persoon.voornaam }} {{ persoon.achternaam }}" class="img-thumbnail" style="max-width: 300px; max-height: 300px;">
                 </div>
-                <form action="{{ url_for('delete_person_photo', persoon_id=persoon.id) }}" method="post" class="mb-3">
-                    <button type="submit" class="btn btn-danger">Verwijder Foto</button>
-                </form>
+                <div class="mb-3">
+                    <button type="submit" name="action" value="delete_photo" class="btn btn-danger">Verwijder Foto</button>
+                </div>
             {% else %}
                 <div class="mb-3">
                     <label for="foto" class="form-label">Foto</label>
-                    <input type="file" class="form-control" id="foto" name="foto">
+                    <div class="custom-file">
+                    <input type="file" class="custom-file-input" id="foto" name="foto" accept="image/*" style="display: none;">
+                    <label class="btn btn-secondary" for="foto" id="fotoLabel">Kies bestand</label>
+                    <span id="fotoNaam" class="ml-2">Geen bestand gekozen</span>
+                </div>
                 </div>
             {% endif %}
         </div>
@@ -87,26 +92,9 @@
 {% endif %}
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    var fotoInput = document.getElementById('foto');
-    var form = document.querySelector('form');
-
-    if (fotoInput) {
-        fotoInput.addEventListener('change', function(event) {
-            var file = event.target.files[0];
-            console.log('Geselecteerd bestand:', file);
-        });
-    }
-
-    if (form) {
-        form.addEventListener('submit', function(event) {
-            console.log('Form wordt verzonden');
-            var formData = new FormData(form);
-            for (var pair of formData.entries()) {
-                console.log(pair[0] + ': ' + (pair[1] instanceof File ? pair[1].name : pair[1]));
-            }
-        });
-    }
+document.getElementById('foto').addEventListener('change', function(e) {
+    var fileName = e.target.files[0] ? e.target.files[0].name : "Geen bestand gekozen";
+    document.getElementById('fotoNaam').textContent = fileName;
 });
 </script>
 
