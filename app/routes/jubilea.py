@@ -6,7 +6,7 @@ from ..database import get_session
 from ..models.models import Jubilea, Personen, Jubileumtypes
 from datetime import datetime
 from typing import Optional
-from ..auth import login_required, role_required, get_current_user
+from ..auth import login_required, role_required, get_current_user, owner_or_admin_required
 from ..logging_config import app_logger, log_debug, log_error
 from config import get_settings
 from PIL import Image
@@ -146,6 +146,7 @@ async def edit_jubileum(request: Request, jubileum_id: int, session: Session = D
 @router.post("/{jubileum_id}/edit", name="update_jubileum")
 @login_required
 @role_required(["Administrator", "Beheerder", "Gebruiker"])
+@owner_or_admin_required(Jubilea)
 async def update_jubileum(
     request: Request,
     jubileum_id    : int,
@@ -192,7 +193,8 @@ async def update_jubileum(
 
 @router.get("/{jubileum_id}/delete", name="delete_jubileum")
 @login_required
-@role_required(["Administrator", "Beheerder"])
+@role_required(["Administrator", "Beheerder", "Gebruiker"])
+@owner_or_admin_required(Jubilea)
 async def delete_jubileum(request: Request, jubileum_id: int, session: Session = Depends(get_session)):
     jubileum = session.get(Jubilea, jubileum_id)
     if not jubileum:

@@ -4,7 +4,7 @@ from fastapi.templating import Jinja2Templates
 from sqlmodel import Session, select
 from ..database import get_session
 from ..models.models import Families, Personen, Gebruikers
-from ..auth import login_required, role_required, get_current_user
+from ..auth import login_required, role_required, get_current_user, owner_or_admin_required
 from ..logging_config import app_logger
 
 router = APIRouter()
@@ -63,6 +63,7 @@ async def edit_family(request: Request, family_id: int, session: Session = Depen
 @router.post("/{family_id}/edit")
 @login_required
 @role_required(["Administrator", "Beheerder", "Gebruiker"])
+@owner_or_admin_required(Families)
 async def update_family(
     request: Request,
     family_id: int,
@@ -94,7 +95,8 @@ async def update_family(
 
 @router.get("/{family_id}/delete")
 @login_required
-@role_required(["Administrator", "Beheerder"])
+@role_required(["Administrator", "Beheerder", "Gebruiker"])
+@owner_or_admin_required(Families)
 async def delete_family(request: Request, family_id: int, session: Session = Depends(get_session)):
     family = session.get(Families, family_id)
     if not family:

@@ -30,5 +30,7 @@
     </div>
     <button type="submit" class="btn btn-primary">Opslaan</button>
     <a href="{{ url_for('list_families') }}" class="btn btn-secondary">Annuleren</a>
+
+    <div class="mt-2"><small><i>Familie aangemaakt door: {{ family.creator.naam }} ({{ family.creator.email }})</i></small></div>
 </form>
 {% endblock %}

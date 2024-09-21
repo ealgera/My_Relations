@@ -62,6 +62,8 @@
         <button type="submit" class="btn btn-primary">Opslaan</button>
         <a href="{{ url_for('list_jubilea') }}" class="btn btn-secondary">Annuleren</a>
     </div>
+
+    <div class="mt-2"><small><i>Jubileum aangemaakt door: {{ jubileum.creator.naam }} ({{ jubileum.creator.email }})</i></small></div>
 </form>
 
 {% endblock %}
