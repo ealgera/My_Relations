@@ -62,7 +62,9 @@
         <a href="{{ request.url_for('list_personen') }}" class="btn btn-secondary">Annuleren</a>
     </div>
 
-    <div class="mt-2"><small><i>Persoon aangemaakt door: {{ persoon.creator.naam }} ({{ persoon.creator.email }})</i></small></div>
+    {% if persoon %}
+        <div class="mt-2"><small><i>Persoon aangemaakt door: {{ persoon.creator.naam }} ({{ persoon.creator.email }})</i></small></div>
+    {% endif %}
 </form>
 
 {% if persoon %}
