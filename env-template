@@ -9,3 +9,10 @@ OAUTHLIB_INSECURE_TRANSPORT=1
 
 # Wordt gebruikt om de sessie te versleutelen. Gebeurt nu in de code, main.py
 # SECRET_KEY=your_secret_key_here
+
+# TESTING = 1 # True = 1, False = 0
+DEVELOPMENT = 1
+
+# EMAIL
+SENDER_MAIL=your_email@gmail.com
+SENDER_APP_PW=your_app_password   # Use an app password, not your regular password

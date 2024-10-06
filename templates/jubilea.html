@@ -3,10 +3,19 @@
 {% block content %}
 <h1 class="mb-4">Jubilea</h1>
 
-<a href="{{ url_for('new_jubileum') }}" class="btn btn-primary mb-4 me-2">
-    <i class="material-icons align-middle me-2">add_circle</i>
-    <span class="align-middle">Nieuw Jubileum</span>
-</a>
+<div class="d-flex mb-4">
+    <a href="{{ url_for('new_jubileum') }}" class="btn btn-primary me-2">
+        <i class="material-icons align-middle me-2">add_circle</i>
+        <span class="align-middle">Nieuw Jubileum</span>
+    </a>
+    <form method="POST" action="{{ url_for('search_jubilea') }}" class="d-flex">
+        <input type="text" class="form-control me-2" id="search_term" name="search_term" placeholder="Zoeken...">
+        <button class="btn btn-success w-100" type="submit">
+            <i class="material-icons align-middle me-1">search</i>
+            Zoeken
+        </button>
+    </form>
+</div>
 
 <table class="styled-table">
     <thead>

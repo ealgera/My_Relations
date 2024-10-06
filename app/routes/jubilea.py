@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Request, HTTPException, Form, Query, UploadFile, File
 from fastapi.responses import RedirectResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
-from sqlmodel import Session, select, func
+from sqlmodel import Session, select, func, or_
 from ..database import get_session
 from ..models.models import Jubilea, Personen, Jubileumtypes
 from datetime import datetime
@@ -18,31 +18,58 @@ templates = Jinja2Templates(directory="templates")
 settings  = get_settings()
 
 def process_photo(file: UploadFile, jubileum_id: int):
+    log_debug(f"[Jubilea - Process_photo] started...")
     file_extension = os.path.splitext(file.filename)[1]
     filename = f"jubileum_{jubileum_id}{file_extension}"
     filepath = settings.FOTO_DIR / filename
     
-    log_debug(f"[Process_photo] Attempting to save jubileum file: {filepath}")
+    log_debug(f"[Jubilea - Process_photo] Probeer foto te bewaren: {filepath}")
     
     try:
         with Image.open(file.file) as img:
-            log_debug(f"[Process_photo] Jubileum image opened successfully")
-            img.thumbnail((300, 300))
-            log_debug(f"[Process_photo] Jubileum image resized")
+            img.thumbnail((1024, 1024))
             img.save(filepath, optimize=True, quality=85)
-            log_debug(f"[Process_photo] Jubileum image saved successfully")
+            log_debug(f"[Jubilea - Process_photo] Foto successvol bewaard!")
         
-        if os.path.exists(filepath):
-            log_debug(f"[Process_photo] Jubileum file exists at {filepath}")
-            log_debug(f"[Process_photo] Jubileum file size: {os.path.getsize(filepath)} bytes")
-        else:
-            log_error(f"[Process_photo] Jubileum file does not exist at {filepath}")
-    
     except Exception as e:
-        log_error(f"[Process_photo] Error saving jubileum image: {str(e)}")
+        log_error(f"[Jubilea - Process_photo] Fout tijdens het bewaren: {str(e)}")
         raise
     
+    log_debug(f"[Jubilea - Process_photo] Foto Returning URL: /fotos/{filename}")
     return f"/fotos/{filename}"
+
+@router.post("/search", response_class=HTMLResponse)
+@login_required
+@role_required(["Administrator", "Beheerder", "Gebruiker"])
+async def search_jubilea(request: Request, search_term: str = Form(None), session: Session = Depends(get_session)):
+    log_debug(f"[Jubilea - Zoeken]: {search_term}")
+    # query = select(Jubilea)
+
+    query = select(Jubilea, Personen, Jubileumtypes).outerjoin(Personen).join(Jubileumtypes)
+    if search_term:
+        query = query.where(
+            or_(
+                Personen.voornaam.ilike(f"%{search_term}%"),
+                Personen.achternaam.ilike(f"%{search_term}%"),
+                Jubilea.omschrijving.ilike(f"%{search_term}%"),
+                Jubileumtypes.naam.ilike(f"%{search_term}%")
+            )
+        )
+
+    results = session.exec(query).all()
+
+    jubilea = [
+        {
+            "id": jubileum.id,
+            "jubileumdag": jubileum.jubileumdag,
+            "omschrijving": jubileum.omschrijving,
+            "jubileumtype": jubileumtype.naam,
+            "persoon": f"{persoon.voornaam} {persoon.achternaam}" if persoon else None
+        }
+        for jubileum, persoon, jubileumtype in results
+    ]
+
+    return templates.TemplateResponse("jubilea.html", {"request": request, "jubilea": jubilea})
 
 @router.get("/", response_class=HTMLResponse, name="list_jubilea")
 @login_required

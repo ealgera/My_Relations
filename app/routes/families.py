@@ -23,6 +23,25 @@ async def list_families(request: Request, session: Session = Depends(get_session
 async def search_families(request: Request):
     return templates.TemplateResponse("family_form.html", {"request": request})
 
+@router.post("/search", response_class=HTMLResponse)
+@login_required
+@role_required(["Administrator", "Beheerder", "Gebruiker"])
+async def search_families(request: Request, search_term: str = Form(None), session: Session = Depends(get_session)):
+    app_logger.debug(f"[Families - Zoeken]: {search_term}")
+    query = select(Families)
+
+    if search_term:
+        query = query.where(
+            Families.familienaam.ilike(f"%{search_term}%") | 
+            Families.straatnaam.ilike(f"%{search_term}%") |
+            Families.postcode.ilike(f"%{search_term}%") |
+            Families.plaats.ilike(f"%{search_term}%") 
+        )
+
+    families = session.exec(query).all()
+
+    return templates.TemplateResponse("families.html", {"request": request, "families": families}) 
+
 @router.get("/new", response_class=HTMLResponse)
 @login_required
 @role_required(["Administrator", "Beheerder", "Gebruiker"])

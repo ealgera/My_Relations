@@ -18,38 +18,24 @@ templates = Jinja2Templates(directory="templates")
 settings  = get_settings()
 
 def process_photo(file: UploadFile, person_id: int):
-    log_debug(f"[Process_photo] started...")
+    log_debug(f"[Personen - Process_photo] gestart...")
     file_extension = os.path.splitext(file.filename)[1]
     filename = f"person_{person_id}{file_extension}"
     filepath = settings.FOTO_DIR / filename
     
-    log_debug(f"[Process_photo] Attempting to save file: {filepath}")
+    log_debug(f"[Personen - Process_photo] Probeer foto te bewaren: {filepath}")
     
     try:
         with Image.open(file.file) as img:
-            # log_debug(f"[Process_photo] Image opened successfully")
-            img.thumbnail((300, 300))
-            # log_debug(f"[Process_photo] Image resized")
+            img.thumbnail((1024, 1024))
             img.save(filepath, optimize=True, quality=85)
-            log_debug(f"[Process_photo] Image saved successfully")
+            log_debug(f"[Personen - Process_photo] Foto successvol bewaard!")
         
-        # Extra controles
-        # if os.path.exists(filepath):
-        #     log_debug(f"[Process_photo] File exists at {filepath}")
-        #     log_debug(f"[Process_photo] File size: {os.path.getsize(filepath)} bytes")
-        # else:
-        #     log_error(f"[Process_photo] File does not exist at {filepath}")
-            
-        # Controleer de inhoud van de directory
-        # log_debug(f"[Process_photo] Contents of {settings.FOTO_DIR}:")
-        # for item in os.listdir(settings.FOTO_DIR):
-        #     log_debug(f"  - {item}")
-    
     except Exception as e:
-        log_error(f"[Process_photo] Error saving image: {str(e)}")
+        log_error(f"[Personen - Process_photo] Fout tijdens het bewaren: {str(e)}")
         raise
     
-    log_debug(f"[Process_photo] Returning URL: /fotos/{filename}")
+    log_debug(f"[Personen - Process_photo] Foto Returning URL: /fotos/{filename}")
     return f"/fotos/{filename}"
 
 @router.get("/", response_class=HTMLResponse)
@@ -73,6 +59,25 @@ async def list_personen(request: Request, session: Session = Depends(get_session
         "personen": personen,
         "current_sort": sort
     })
+
+@router.post("/search", response_class=HTMLResponse)
+@login_required
+@role_required(["Administrator", "Beheerder", "Gebruiker"])
+async def search_personen(request: Request, search_term: str = Form(None), session: Session = Depends(get_session)):
+    log_debug(f"[Personen - Zoeken]: {search_term}")
+    query = select(Personen)
+
+    if search_term:
+        query = query.where(
+            Personen.voornaam.ilike(f"%{search_term}%") | 
+            Personen.achternaam.ilike(f"%{search_term}%") # |
+            # Personen.postcode.ilike(f"%{search_term}%") |
+            # Personen.plaats.ilike(f"%{search_term}%") 
+        )
+
+    personen = session.exec(query).all()
+
+    return templates.TemplateResponse("personen.html", {"request": request, "personen": personen}) 
 
 @router.get("/new", name="new_persoon")
 @login_required

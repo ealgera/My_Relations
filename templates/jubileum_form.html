@@ -44,7 +44,9 @@
         <div class="col-md-6">
             {% if jubileum and jubileum.foto_url %}
                 <div class="mb-3">
-                    <img src="{{ jubileum.foto_url }}" alt="Jubileum foto" class="img-thumbnail" style="max-width: 300px; max-height: 300px;">
+                    <a href="{{ jubileum.foto_url }}" target="_blank">
+                        <img src="{{ jubileum.foto_url }}" alt="Jubileum foto" class="img-thumbnail" style="max-width: 300px; max-height: 300px;">
+                    </a>
                 </div>
                 <div class="mb-3">
                     <button type="submit" name="action" value="delete_photo" class="btn btn-danger">Verwijder Foto</button>

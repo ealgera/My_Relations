@@ -37,7 +37,9 @@
         <div class="col-md-6">
             {% if persoon and persoon.foto_url %}
                 <div class="mb-3">
-                    <img src="{{ persoon.foto_url }}" alt="{{ persoon.voornaam }} {{ persoon.achternaam }}" class="img-thumbnail" style="max-width: 300px; max-height: 300px;">
+                    <a href="{{ persoon.foto_url }}" target="_blank">
+                        <img src="{{ persoon.foto_url }}" alt="{{ persoon.voornaam }} {{ persoon.achternaam }}" class="img-thumbnail" style="max-width: 300px; max-height: 300px;">
+                    </a>
                 </div>
                 <div class="mb-3">
                     <button type="submit" name="action" value="delete_photo" class="btn btn-danger">Verwijder Foto</button>

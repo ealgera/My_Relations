@@ -1,14 +1,16 @@
 {% extends "index.html" %}
 
 {% block content %}
+<hr>
 <h1>{{ family.familienaam }}</h1>
+<hr>
 
-<h2>Adres</h2>
-<p>
+<h3>
     {{ family.straatnaam }} {{ family.huisnummer }}
     {% if family.huisnummer_toevoeging %}{{ family.huisnummer_toevoeging }}{% endif %},
     {{ family.postcode }} {{ family.plaats }}
-</p>
+</h3>
+<hr>
 
 <h2>Familieleden</h2>
 {% if members %}
@@ -24,9 +26,9 @@
 {% else %}
     <p>Deze familie heeft nog geen geregistreerde leden.</p>
 {% endif %}
+<hr>
+
 <div class="mb-4"><small><i>Familie aangemaakt door: {{ family.creator.naam }} ({{ family.creator.email }})</i></small></div>
-
-
 
 <a href="{{ url_for('list_families') }}" class="btn btn-secondary">Terug naar Families</a>
 {% endblock %}
