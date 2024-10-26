@@ -19,6 +19,11 @@
             </div>
 
             <div class="mb-3">
+                <label for="jubileumnaam" class="form-label">Jubileumnaam</label>
+                <input type="text" class="form-control" id="jubileumnaam" name="jubileumnaam" value="{{ jubileum.jubileumnaam if jubileum else '' }}" required>
+            </div>
+
+            <div class="mb-3">
                 <label for="jubileumdag" class="form-label">Jubileumdag</label>
                 <input type="date" class="form-control" id="jubileumdag" name="jubileumdag" value="{{ formatted_date if jubileum else '' }}" required>
             </div>
@@ -26,6 +31,13 @@
             <div class="mb-3">
                 <label for="omschrijving" class="form-label">Omschrijving</label>
                 <textarea class="form-control" id="omschrijving" name="omschrijving" rows="3">{{ jubileum.omschrijving if jubileum else '' }}</textarea>
+            </div>
+
+            <div class="mb-3">
+                <label for="url" class="form-label">URL (optioneel)</label>
+                <input type="text" class="form-control" id="url" name="url" value="{{ jubileum.url if jubileum and jubileum.url != None else '' }}" 
+                       pattern="(^$|^https?:\/\/.+)" title="Laat leeg of vul een geldige URL in beginnend met http:// of https://">
+                <small class="form-text text-muted">Laat leeg of vul een volledige URL in (beginnend met http:// of https://)</small>
             </div>
 
             <div class="mb-3">

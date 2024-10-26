@@ -44,13 +44,15 @@
                     {% endif %}
                 </a>
             </th>
+            <th>Jubileumnaam</th>
             <th>Omschrijving</th>
+            <th>URL</th>
             <th>Acties</th>
         </tr>
     </thead>
     <tbody>
         {% for jubileum in jubilea %}
-        <tr style="font-size: 1.2em;"">
+        <tr style="font-size: 1.2em;">
             <td>{{ jubileum.jubileumtype }}</td>
             <td>{{ jubileum.jubileumdag }}</td>
             {% if jubileum.persoon %}
@@ -58,7 +60,17 @@
             {% else %}
                 <td>-</td>
             {% endif %}
+            <td>{{ jubileum.jubileumnaam }}</td>
             <td>{{ jubileum.omschrijving }}</td>
+            <td>
+                {% if jubileum.url %}
+                    <a href="{{ jubileum.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                        <i class="material-icons" style="font-size: 1.4em;">link</i>
+                    </a>
+                {% else %}
+                    -
+                {% endif %}
+            </td>
             <td>
                 <a href="{{ url_for('edit_jubileum', jubileum_id=jubileum.id) }}" class="btn btn-sm btn-outline-primary" title="Bewerken">
                     <i class="material-icons" style="font-size: 1.4em;">edit</i>

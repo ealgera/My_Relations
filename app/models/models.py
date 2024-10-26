@@ -62,6 +62,8 @@ class Jubilea(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     jubileumdag: str
     omschrijving: Optional[str] = Field(default=None)
+    jubileumnaam: str  # Changed to required field
+    url: Optional[str] = Field(default=None)
     persoon_id: Optional[int] = Field(default=None, foreign_key="personen.id")
     jubileumtype_id: Optional[int] = Field(foreign_key="jubileumtypes.id", nullable=True)
     foto_url: Optional[str] = Field(default=None)
@@ -90,4 +92,3 @@ class Relaties(SQLModel, table=True):
 
     class Config:
         arbitrary_types_allowed = True
-        

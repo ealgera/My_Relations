@@ -107,18 +107,21 @@
                         <li class="list-group-item">
                             {% if event.event_type == "Geboortedag" %}
                                 <span class="material-icons event-icon" style="color: #FF69B4;">cake</span>
-                            {% elif event.event_type == "Huwelijk" %}
-                                <span class="material-icons event-icon" style="color: #4169E1;">favorite</span>
+                            {% elif event.event_type == "Trouwdag" %}
+                                <span class="material-icons event-icon" style="color: #FF4081;">favorite</span>
                             {% else %}
                                 <span class="material-icons event-icon" style="color: #32CD32;">event</span>
                             {% endif %}
                             <div class="event-details">
                                 <strong>{{ event.date.strftime('%d-%m-%Y') }}</strong>: 
-                                <a href="{{ url_for('edit_jubileum', jubileum_id=event.jubileum_id) }}">{{ event.name }}</a> - 
-                                {{ event.description }}
-                                {% if event.event_type != "Geboortedag" %}
-                                    ({{ event.event_type }})
-                                {% endif %}
+                                <a href="{{ url_for('edit_jubileum', jubileum_id=event.jubileum_id) }}">
+                                    {% if event.event_type == "Trouwdag" %}
+                                        <span class="wedding-couple">{{ event.name }}</span>
+                                    {% else %}
+                                        {{ event.name }}
+                                    {% endif %}
+                                </a> - 
+                                <span class="event-description">{{ event.description }}</span>
                             </div>
                             {% if event.foto_url %}
                                 <div class="ms-3">

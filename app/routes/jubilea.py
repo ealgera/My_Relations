@@ -43,7 +43,6 @@ def process_photo(file: UploadFile, jubileum_id: int):
 @role_required(["Administrator", "Beheerder", "Gebruiker"])
 async def search_jubilea(request: Request, search_term: str = Form(None), session: Session = Depends(get_session)):
     log_debug(f"[Jubilea - Zoeken]: {search_term}")
-    # query = select(Jubilea)
 
     query = select(Jubilea, Personen, Jubileumtypes).outerjoin(Personen).join(Jubileumtypes)
     if search_term:
@@ -52,6 +51,7 @@ async def search_jubilea(request: Request, search_term: str = Form(None), sessio
                 Personen.voornaam.ilike(f"%{search_term}%"),
                 Personen.achternaam.ilike(f"%{search_term}%"),
                 Jubilea.omschrijving.ilike(f"%{search_term}%"),
+                Jubilea.jubileumnaam.ilike(f"%{search_term}%"),
                 Jubileumtypes.naam.ilike(f"%{search_term}%")
             )
         )
@@ -63,6 +63,8 @@ async def search_jubilea(request: Request, search_term: str = Form(None), sessio
             "id": jubileum.id,
             "jubileumdag": jubileum.jubileumdag,
             "omschrijving": jubileum.omschrijving,
+            "jubileumnaam": jubileum.jubileumnaam,
+            "url": jubileum.url,
             "jubileumtype": jubileumtype.naam,
             "persoon": f"{persoon.voornaam} {persoon.achternaam}" if persoon else None
         }
@@ -92,6 +94,8 @@ async def list_jubilea(request: Request, session: Session = Depends(get_session)
             "id": jubileum.id,
             "jubileumdag": jubileum.jubileumdag,
             "omschrijving": jubileum.omschrijving,
+            "jubileumnaam": jubileum.jubileumnaam,
+            "url": jubileum.url,
             "jubileumtype": jubileumtype.naam,
             "persoon": f"{persoon.voornaam} {persoon.achternaam}" if persoon else None
         }
@@ -125,17 +129,25 @@ async def create_jubileum(
     request: Request,
     jubileumtype_id: int     = Form(...),
     jubileumdag    : str     = Form(...),
+    jubileumnaam   : str     = Form(...),
     omschrijving   : str     = Form(None),
+    url            : str     = Form(None),
     persoon_id     : Optional[int] = Form(None),
     foto           : UploadFile    = File(None),
     current_user   : dict    = Depends(get_current_user),
     session        : Session = Depends(get_session)
 ):
-    # jubileumdag = datetime.strptime(jubileumdag, "%d-%m-%Y").strftime("%Y-%m-%d")
     jubileumdag = datetime.strptime(jubileumdag, "%Y-%m-%d").strftime("%Y-%m-%d")
     
-    new_jubileum = Jubilea(jubileumtype_id=jubileumtype_id, jubileumdag=jubileumdag, omschrijving=omschrijving, 
-        persoon_id=persoon_id, created_by=current_user['id'])
+    new_jubileum = Jubilea(
+        jubileumtype_id=jubileumtype_id,
+        jubileumdag=jubileumdag,
+        jubileumnaam=jubileumnaam,
+        omschrijving=omschrijving,
+        url=url,
+        persoon_id=persoon_id,
+        created_by=current_user['id']
+    )
     session.add(new_jubileum)
     session.commit()
     session.refresh(new_jubileum)
@@ -159,7 +171,6 @@ async def edit_jubileum(request: Request, jubileum_id: int, session: Session = D
     personen = session.exec(select(Personen)).all()
     jubileumtypes = session.exec(select(Jubileumtypes)).all()
 
-    # formatted_date = datetime.strptime(jubileum.jubileumdag, "%Y-%m-%d").strftime("%d-%m-%Y")
     formatted_date = datetime.strptime(jubileum.jubileumdag, "%Y-%m-%d").strftime("%Y-%m-%d")
     
     return templates.TemplateResponse("jubileum_form.html", {
@@ -180,7 +191,9 @@ async def update_jubileum(
     action         : str     = Form(...),
     jubileumtype_id: int     = Form(None),
     jubileumdag    : str     = Form(None),
+    jubileumnaam   : str     = Form(None),
     omschrijving   : str     = Form(None),
+    url            : str     = Form(None),
     persoon_id     : Optional[int] = Form(None),
     foto           : UploadFile    = File(None),
     session        : Session = Depends(get_session)
@@ -203,7 +216,9 @@ async def update_jubileum(
         
         jubileum.jubileumtype_id = jubileumtype_id
         jubileum.jubileumdag     = jubileumdag
+        jubileum.jubileumnaam    = jubileumnaam
         jubileum.omschrijving    = omschrijving
+        jubileum.url             = url
         jubileum.persoon_id      = persoon_id
 
         if foto and foto.filename:

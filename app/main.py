@@ -2,7 +2,7 @@ from fastapi import FastAPI, Depends, Request, HTTPException, Form, Query
 from fastapi.responses import RedirectResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from sqlmodel import Session, select
+from sqlmodel import Session, select, or_, and_
 from pathlib import Path
 from .database import get_session, create_db_and_tables, engine
 from .models.models import Families, Personen, Jubilea, Relatietypes, Relaties, Jubileumtypes
@@ -45,7 +45,6 @@ app.mount("/fotos", StaticFiles(directory=settings.FOTO_DIR), name="fotos")
 
 # Voeg SessionMiddleware toe
 log_info("[MAIN] Adding SessionMiddleware")
-# app.add_middleware(SessionMiddleware, secret_key=settings.SECRET_KEY)
 app.add_middleware(
     SessionMiddleware,
     secret_key=settings.SECRET_KEY,
@@ -62,8 +61,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-# app_logger.debug("Adding AuthMiddleware")
-# app.add_middleware(AuthMiddleware)
 
 # Inclusie van de diverse blueprints
 app.include_router(families.router, prefix="/families", tags=["families"])
@@ -80,13 +77,6 @@ app.include_router(auth_router, tags=["auth"])
 @app.on_event("startup")
 async def startup_event():
     create_db_and_tables()
-
-# @app.on_event("startup")
-# async def print_routes():
-#     routes = [route for route in app.router.routes]
-#     for route in routes:
-#         print(f"Route name: {route.name}, path: {route.path}")
-
 
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request: Request, exc: HTTPException):
@@ -129,6 +119,35 @@ def get_upcoming_events(session: Session):
                     event_description = f"wordt {age} jaar"
                 else:
                     event_description = f"zou {age} jaar zijn geworden."
+            elif jubileumtype.naam == "Trouwdag" and persoon:
+                # Find spouse through marriage relationship
+                spouse = session.exec(
+                    select(Personen)
+                    .join(Relaties, or_(
+                        and_(Relaties.persoon1_id == Personen.id, Relaties.persoon2_id == persoon.id),
+                        and_(Relaties.persoon2_id == Personen.id, Relaties.persoon1_id == persoon.id)
+                    ))
+                    .join(Relatietypes)
+                    .where(Relatietypes.relatienaam == "Gehuwd")
+                ).first()
+                
+                years = this_year_event.year - event_date.year
+                if spouse:
+                    name = f"{persoon.voornaam} {persoon.achternaam} & {spouse.voornaam} {spouse.achternaam}"
+                    event_description = f"{years}-jarig huwelijk"
+                else:
+                    name = f"{persoon.voornaam} {persoon.achternaam}"
+                    event_description = f"{years}-jarig huwelijk"
+                
+                upcoming_events.append({
+                    "jubileum_id": jubileum.id,
+                    "name": name,
+                    "date": this_year_event,
+                    "event_type": jubileumtype.naam,
+                    "description": event_description,
+                    "foto_url": jubileum.foto_url or (persoon.foto_url if persoon else None)
+                })
+                continue  # Skip the default append for wedding anniversaries
             else:
                 event_description = jubileumtype.naam
             

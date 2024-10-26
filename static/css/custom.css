@@ -1,126 +1,110 @@
-:root {
-    --gradient-start: #ff69b4;
-    --gradient-end: #4169e1;
-}
-
-body {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-    /* background-color: #2c3e50; */
-    background: linear-gradient(to bottom, var(--gradient-start, #ff69b4), var(--gradient-end, #4169e1));
-}
-
 .header {
-    /* background: linear-gradient(to right, var(--gradient-start), var(--gradient-end)); */
-    background-color: var(--gradient-start);
-    /* background-color: #ff69b4; */
-    color: white;
+    background-color: #004d40;
+}
+
+.logo {
+    height: 40px;
+    margin-right: 10px;
 }
 
 .sidebar {
-    /* background: linear-gradient(to bottom, #ff69b4, #4169e1); */
-    background: linear-gradient(to bottom, var(--gradient-start, #ff69b4), var(--gradient-end, #4169e1));
-    color: white;
-    min-height: calc(100vh - 56px - 50px);
-}
-
-.sidebar .nav-link {
-    color: white;
-}
-
-.sidebar .nav-link:hover {
-    background-color: rgba(255,255,255,0.1);
+    background-color: #f8f9fa;
+    min-height: calc(100vh - 56px);
+    padding-top: 1rem;
 }
 
 .content {
-    flex: 1;
-    background-color: white;
+    padding-top: 1rem;
 }
 
-.footer {
-    background-color: #4169e1;
-    color: white;
-    padding: 10px 0;
-    text-align: center;
-}
-.btn-custom {
-    background-color: #4169e1;
-    border-color: #4169e1;
-    color: white;
-}
-.btn-custom:hover {
-    background-color: #3a5fc8;
-    border-color: #3a5fc8;
-    color: white;
-}
-.logo {
-    width: 100px;
-    height: 100px;
-    object-fit: contain;
-    margin-right: 10px;
-}
-
-.list-group-item {
-    padding-left: 15px;
+.nav-link {
+    color: #333;
     display: flex;
     align-items: center;
+    gap: 8px;
+}
+
+.nav-link:hover {
+    color: #004d40;
 }
 
 .material-icons {
-    margin-right: 10px;
-}
-
-.compact-list {
-    padding-left: 0;
+    vertical-align: middle;
 }
 
 .compact-list .list-group-item {
-    padding: 0.5rem 0.75rem;
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
 }
 
 .event-icon {
-    margin-right: 10px;
-    font-size: 1.2rem;
+    margin-right: 1rem;
+    font-size: 24px;
 }
 
 .event-details {
-    flex: 1;
-}
-.dropdown-menu-dark {
-    background: linear-gradient(to bottom, #4169e1, #3a5fc8);
+    flex-grow: 1;
 }
 
-table.styled-table {
-    border-collapse: collapse;
-    margin: 25px 0;
-    font-size: 0.9em;
-    font-family: sans-serif;
-    min-width: 400px;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+.footer {
+    background-color: #f8f9fa;
+    padding: 1rem 0;
+    margin-top: 2rem;
 }
 
-table.styled-table thead tr {
-    background-color: #007bff;
-    color: #ffffff;
-    text-align: left;
-    font-size: 1.1em;
+/* Admin submenu styling */
+#adminSubmenu {
+    padding-left: 2rem;
 }
 
-table.styled-table th,
-table.styled-table td {
-    padding: 12px 15px;
+#adminSubmenu .nav-link {
+    padding: 0.5rem 1rem;
 }
 
-table.styled-table tbody tr {
-    border-bottom: 1px solid #dddddd;
-    font-size: 1.2em;
+/* Wedding anniversary specific styles */
+.wedding-couple {
+    color: #FF4081;
+    font-weight: 500;
 }
 
-table.styled-table tbody tr:nth-of-type(even) {
-    background-color: #f3f3f3;
+.event-description {
+    color: #666;
 }
 
-table.styled-table tbody tr:last-of-type {
-    border-bottom: 2px solid #007bff;
+/* Make the list items more compact but still readable */
+.compact-list .list-group-item {
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.5rem;
+    border-radius: 4px;
+    background-color: #fff;
+    border: 1px solid rgba(0,0,0,.125);
+    transition: background-color 0.2s ease;
+}
+
+.compact-list .list-group-item:hover {
+    background-color: #f8f9fa;
+}
+
+/* Style for images in the list */
+.img-thumbnail {
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .compact-list .list-group-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .event-details {
+        margin: 0.5rem 0;
+    }
+    
+    .img-thumbnail {
+        margin-top: 0.5rem;
+    }
 }

@@ -88,12 +88,27 @@ async def logout(request: Request):
 
 def login_required(func):
     @wraps(func)
-    async def wrapper(request: Request, *args, **kwargs):
+    async def wrapper(*args, **kwargs):
+        request = None
+        for arg in args:
+            if isinstance(arg, Request):
+                request = arg
+                break
+        if request is None:
+            for arg in kwargs.values():
+                if isinstance(arg, Request):
+                    request = arg
+                    break
+        
+        if request is None:
+            raise HTTPException(status_code=500, detail="Request object not found")
+            
         log_debug(f"[AUTH] Login required - Checking login for route: {request.url.path}")
         if 'user' not in request.session:
             log_debug("[AUTH] Login Required - No User found in session, redirecting to login")
             raise HTTPException(status_code=303, detail="Not authenticated", headers={"Location": "/login"})
-        return await func(request, *args, **kwargs)
+        
+        return await func(*args, **kwargs)
     return wrapper
 
 def role_required(allowed_roles: Union[str, List[str]]):
