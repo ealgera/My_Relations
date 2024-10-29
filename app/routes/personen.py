@@ -10,7 +10,6 @@ from datetime import datetime
 from config import get_settings
 from PIL import Image
 import os
-# from pathlib import Path
 
 router    = APIRouter()
 
@@ -70,9 +69,7 @@ async def search_personen(request: Request, search_term: str = Form(None), sessi
     if search_term:
         query = query.where(
             Personen.voornaam.ilike(f"%{search_term}%") | 
-            Personen.achternaam.ilike(f"%{search_term}%") # |
-            # Personen.postcode.ilike(f"%{search_term}%") |
-            # Personen.plaats.ilike(f"%{search_term}%") 
+            Personen.achternaam.ilike(f"%{search_term}%")
         )
 
     personen = session.exec(query).all()
@@ -115,7 +112,6 @@ async def create_persoon(
 @router.get("/{persoon_id}/edit", name="edit_persoon")
 @login_required
 @role_required(["Administrator", "Beheerder", "Gebruiker"])
-# @owner_or_admin_required(Personen)
 async def edit_persoon(request: Request, persoon_id: int, session: Session = Depends(get_session)):
     persoon = session.get(Personen, persoon_id)
     
@@ -127,11 +123,26 @@ async def edit_persoon(request: Request, persoon_id: int, session: Session = Dep
     # Sorteer de jubilea op datum
     sorted_jubilea = sorted(persoon.jubilea, key=lambda x: datetime.strptime(x.jubileumdag, "%Y-%m-%d"))
     
+    # Combineer relaties waarin de persoon persoon1 of persoon2 is
+    alle_relaties = persoon.relaties_als_persoon1 + persoon.relaties_als_persoon2
+    
+    # Bereid de relatie-informatie voor
+    relaties_info = []
+    for relatie in alle_relaties:
+        gerelateerde_persoon = relatie.persoon2 if relatie.persoon1_id == persoon_id else relatie.persoon1
+        relaties_info.append({
+            "id": relatie.id,
+            "relatietype": relatie.relatietype,
+            "persoon1": relatie.persoon1,
+            "persoon2": relatie.persoon2
+        })
+    
     return templates.TemplateResponse("persoon_form.html", {
         "request" : request, 
         "persoon" : persoon, 
         "families": families,
-        "jubilea" : sorted_jubilea
+        "jubilea" : sorted_jubilea,
+        "relaties": relaties_info
     })
 
 @router.post("/{persoon_id}/edit", name="update_persoon")

@@ -1,31 +1,36 @@
 .header {
-    background-color: #004d40;
+    background: linear-gradient(to right, #ff69b4, #ff1493);
+    color: white;
 }
 
 .logo {
-    height: 40px;
+    height: 100px;
     margin-right: 10px;
 }
 
 .sidebar {
-    background-color: #f8f9fa;
+    background: linear-gradient(to bottom, #ff69b4, #4169e1);
     min-height: calc(100vh - 56px);
     padding-top: 1rem;
 }
 
 .content {
     padding-top: 1rem;
+    background-color: white;
 }
 
 .nav-link {
-    color: #333;
+    color: white !important;
     display: flex;
     align-items: center;
     gap: 8px;
+    padding: 0.5rem 1rem;
+    transition: background-color 0.3s;
 }
 
 .nav-link:hover {
-    color: #004d40;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white !important;
 }
 
 .material-icons {
@@ -47,15 +52,26 @@
     flex-grow: 1;
 }
 
+/* Override Bootstrap's bg-light class for footer */
+.footer.bg-light {
+    background-color: #4169e1 !important;
+}
+
 .footer {
-    background-color: #f8f9fa;
+    background-color: #4169e1 !important;
     padding: 1rem 0;
     margin-top: 2rem;
+}
+
+/* Override Bootstrap's text-muted in footer specifically */
+.footer span.text-muted {
+    color: white !important;
 }
 
 /* Admin submenu styling */
 #adminSubmenu {
     padding-left: 2rem;
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
 #adminSubmenu .nav-link {
@@ -91,6 +107,12 @@
     border-radius: 4px;
     border: 1px solid #ddd;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* Card styling */
+.card-header {
+    background-color: #8154ca;
+    color: white;
 }
 
 /* Responsive adjustments */

@@ -1,109 +1,195 @@
 {% extends "index.html" %}
+
 {% block content %}
+<div class="container-fluid px-0">
+    <h1 class="mb-4">{% if persoon %}Persoon Bewerken{% else %}Nieuwe Persoon{% endif %}</h1>
 
-<h1 class="mb-4">{% if persoon %}Persoon Bewerken{% else %}Nieuwe Persoon{% endif %}</h1>
-
-<form method="post" enctype="multipart/form-data">
-    <input type="hidden" name="action" value="update_persoon">
-    <div class="row">
-        <div class="col-md-6">
-            <div class="mb-3">
-                <label for="voornaam" class="form-label">Voornaam</label>
-                <input type="text" class="form-control" id="voornaam" name="voornaam" value="{{ persoon.voornaam if persoon else '' }}" required>
+    <form method="post" enctype="multipart/form-data">
+        <input type="hidden" name="action" value="update_persoon">
+        
+        <!-- Persoonlijke informatie -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Persoonlijke Informatie</h5>
             </div>
+            <div class="card-body">
+                <div class="row">
+                    <!-- Linker kolom met persoonsgegevens -->
+                    <div class="col-md-8">
+                        <!-- Naam op één regel -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="voornaam" class="form-label">Voornaam</label>
+                                <input type="text" class="form-control" id="voornaam" name="voornaam" value="{{ persoon.voornaam if persoon else '' }}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="achternaam" class="form-label">Achternaam</label>
+                                <input type="text" class="form-control" id="achternaam" name="achternaam" value="{{ persoon.achternaam if persoon else '' }}" required>
+                            </div>
+                        </div>
 
-            <div class="mb-3">
-                <label for="achternaam" class="form-label">Achternaam</label>
-                <input type="text" class="form-control" id="achternaam" name="achternaam" value="{{ persoon.achternaam if persoon else '' }}" required>
-            </div>
+                        <!-- Familie en Leeft status op één regel -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="familie_id" class="form-label">Familie</label>
+                                <select class="form-control" id="familie_id" name="familie_id" required>
+                                    {% for familie in families %}
+                                        <option value="{{ familie.id }}" {% if persoon and persoon.familie_id == familie.id %}selected{% endif %}>
+                                            {{ familie.familienaam }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6 d-flex align-items-end">
+                                <div class="form-check mb-2">
+                                    <input type="checkbox" class="form-check-input" id="leeft" name="leeft" {% if persoon and persoon.leeft %}checked{% endif %}>
+                                    <label class="form-check-label" for="leeft">Leeft</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-            <div class="mb-3">
-                <label for="familie_id" class="form-label">Familie</label>
-                <select class="form-control" id="familie_id" name="familie_id" required>
-                    {% for familie in families %}
-                        <option value="{{ familie.id }}" {% if persoon and persoon.familie_id == familie.id %}selected{% endif %}>
-                            {{ familie.familienaam }}
-                        </option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div class="mb-3 form-check">
-                <input type="checkbox" class="form-check-input" id="leeft" name="leeft" {% if persoon and persoon.leeft %}checked{% endif %}>
-                <label class="form-check-label" for="leeft">Leeft</label>
+                    <!-- Rechter kolom met foto -->
+                    <div class="col-md-4">
+                        {% if persoon and persoon.foto_url %}
+                            <div class="text-center">
+                                <a href="{{ persoon.foto_url }}" target="_blank">
+                                    <img src="{{ persoon.foto_url }}" alt="{{ persoon.voornaam }} {{ persoon.achternaam }}" 
+                                         class="img-thumbnail mb-2" style="max-width: 200px; max-height: 200px;">
+                                </a>
+                                <div>
+                                    <button type="submit" name="action" value="delete_photo" class="btn btn-danger btn-sm">
+                                        <i class="material-icons align-middle me-1">delete</i>
+                                        Verwijder Foto
+                                    </button>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="text-center">
+                                <label for="foto" class="form-label">Foto</label>
+                                <div class="d-flex flex-column align-items-center">
+                                    <input type="file" class="custom-file-input" id="foto" name="foto" accept="image/*" style="display: none;">
+                                    <label class="btn btn-secondary mb-2" for="foto" id="fotoLabel">
+                                        <i class="material-icons align-middle me-1">add_photo_alternate</i>
+                                        Kies bestand
+                                    </label>
+                                    <span id="fotoNaam" class="text-muted">Geen bestand gekozen</span>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="col-md-6">
-            {% if persoon and persoon.foto_url %}
-                <div class="mb-3">
-                    <a href="{{ persoon.foto_url }}" target="_blank">
-                        <img src="{{ persoon.foto_url }}" alt="{{ persoon.voornaam }} {{ persoon.achternaam }}" class="img-thumbnail" style="max-width: 300px; max-height: 300px;">
-                    </a>
-                </div>
-                <div class="mb-3">
-                    <button type="submit" name="action" value="delete_photo" class="btn btn-danger">Verwijder Foto</button>
-                </div>
-            {% else %}
-                <div class="mb-3">
-                    <label for="foto" class="form-label">Foto</label>
-                    <div class="custom-file">
-                    <input type="file" class="custom-file-input" id="foto" name="foto" accept="image/*" style="display: none;">
-                    <label class="btn btn-secondary" for="foto" id="fotoLabel">Kies bestand</label>
-                    <span id="fotoNaam" class="ml-2">Geen bestand gekozen</span>
-                </div>
-                </div>
-            {% endif %}
+        <div class="mt-3 mb-4">
+            <button type="submit" class="btn btn-primary">
+                <i class="material-icons align-middle me-1">save</i>
+                Opslaan
+            </button>
+            <a href="{{ request.url_for('list_personen') }}" class="btn btn-secondary">
+                <i class="material-icons align-middle me-1">cancel</i>
+                Annuleren
+            </a>
         </div>
-    </div>
 
-    
-
-    <div class="mt-3">
-        <button type="submit" class="btn btn-primary">Opslaan</button>
-        <a href="{{ request.url_for('list_personen') }}" class="btn btn-secondary">Annuleren</a>
-    </div>
+        {% if persoon %}
+            <div class="mb-3"><small><i>Persoon aangemaakt door: {{ persoon.creator.naam }} ({{ persoon.creator.email }})</i></small></div>
+        {% endif %}
+    </form>
 
     {% if persoon %}
-        <div class="mt-2"><small><i>Persoon aangemaakt door: {{ persoon.creator.naam }} ({{ persoon.creator.email }})</i></small></div>
+        <!-- Twee-koloms layout voor Jubilea en Relaties -->
+        <div class="row">
+            <!-- Jubilea kolom -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Jubilea</h5>
+                        <a href="{{ url_for('new_jubileum') }}?persoon_id={{ persoon.id }}" class="btn btn-success btn-sm">
+                            <i class="material-icons align-middle">add</i>
+                            Nieuw Jubileum
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        {% if jubilea %}
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Type</th>
+                                            <th>Datum</th>
+                                            <th>Omschrijving</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for jubileum in jubilea %}
+                                            <tr>
+                                                <td>{{ jubileum.jubileumtype.naam }}</td>
+                                                <td>{{ jubileum.jubileumdag }}</td>
+                                                <td>{{ jubileum.omschrijving }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <p class="mb-0">Deze persoon heeft nog geen geregistreerde jubilea.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Relaties kolom -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Relaties</h5>
+                        <a href="{{ url_for('new_relatie') }}" class="btn btn-success btn-sm">
+                            <i class="material-icons align-middle">add</i>
+                            Nieuwe Relatie
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        {% if relaties %}
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Relatie</th>
+                                            <th>Persoon</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for relatie in relaties %}
+                                            <tr>
+                                                <td>{{ relatie.relatietype.relatienaam }}</td>
+                                                <td>
+                                                    {% if relatie.persoon1.id == persoon.id %}
+                                                        {{ relatie.persoon2.voornaam }} {{ relatie.persoon2.achternaam }}
+                                                    {% else %}
+                                                        {{ relatie.persoon1.voornaam }} {{ relatie.persoon1.achternaam }}
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <p class="mb-0">Deze persoon heeft nog geen geregistreerde relaties.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
     {% endif %}
-</form>
 
-{% if persoon %}
-    <h2 class="mt-4">Jubilea</h2>
-    {% if jubilea %}
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Jubileumtype</th>
-                    <th>Datum</th>
-                    <th>Omschrijving</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for jubileum in jubilea %}
-                    <tr>
-                        <td>{{ jubileum.jubileumtype.naam }}</td>
-                        <td>{{ jubileum.jubileumdag }}</td>
-                        <td>{{ jubileum.omschrijving }}</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <p>Deze persoon heeft nog geen geregistreerde jubilea.</p>
-    {% endif %}
-
-    <div class="mt-3">
-        <a href="{{ url_for('new_jubileum') }}?persoon_id={{ persoon.id }}" class="btn btn-success">Nieuw Jubileum Toevoegen</a>
-    </div>
-{% endif %}
-
-<script>
-document.getElementById('foto').addEventListener('change', function(e) {
-    var fileName = e.target.files[0] ? e.target.files[0].name : "Geen bestand gekozen";
-    document.getElementById('fotoNaam').textContent = fileName;
-});
-</script>
-
+    <script>
+    document.getElementById('foto').addEventListener('change', function(e) {
+        var fileName = e.target.files[0] ? e.target.files[0].name : "Geen bestand gekozen";
+        document.getElementById('fotoNaam').textContent = fileName;
+    });
+    </script>
+</div>
 {% endblock %}

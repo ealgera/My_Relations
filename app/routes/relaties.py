@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Request, HTTPException, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from sqlmodel import Session, select
+from sqlmodel import Session, select, or_
 from sqlalchemy.orm import aliased
 from ..database import get_session
 from ..models.models import Relaties, Personen, Relatietypes
@@ -12,6 +12,68 @@ from ..logging_config import app_logger
 router = APIRouter()
 
 templates = Jinja2Templates(directory="templates")
+
+@router.post("/search", response_class=HTMLResponse)
+@login_required
+@role_required(["Administrator", "Beheerder", "Gebruiker"])
+async def search_relaties(request: Request, search_term: str = Form(None), session: Session = Depends(get_session)):
+    app_logger.debug(f"[Relaties - Zoeken]: {search_term}")
+
+    Persoon1 = aliased(Personen)
+    Persoon2 = aliased(Personen)
+
+    query = select(
+        Relaties.id,
+        Relaties.persoon1_id,
+        Relaties.persoon2_id,
+        Relaties.relatietype_id,
+        Persoon1.voornaam.label('persoon1_voornaam'),
+        Persoon1.achternaam.label('persoon1_achternaam'),
+        Relatietypes.relatienaam,
+        Persoon2.voornaam.label('persoon2_voornaam'),
+        Persoon2.achternaam.label('persoon2_achternaam')
+    ).join(
+        Persoon1, Relaties.persoon1_id == Persoon1.id
+    ).join(
+        Relatietypes, Relaties.relatietype_id == Relatietypes.id
+    ).outerjoin(
+        Persoon2, Relaties.persoon2_id == Persoon2.id
+    )
+
+    if search_term:
+        query = query.where(
+            or_(
+                Persoon1.voornaam.ilike(f"%{search_term}%"),
+                Persoon1.achternaam.ilike(f"%{search_term}%"),
+                Persoon2.voornaam.ilike(f"%{search_term}%"),
+                Persoon2.achternaam.ilike(f"%{search_term}%"),
+                Relatietypes.relatienaam.ilike(f"%{search_term}%")
+            )
+        )
+
+    results = session.exec(query).all()
+    
+    relaties = []
+    for row in results:
+        relaties.append({
+            "id": row.id,
+            "persoon1": {
+                "id": row.persoon1_id,
+                "voornaam": row.persoon1_voornaam,
+                "achternaam": row.persoon1_achternaam
+            },
+            "persoon2": {
+                "id": row.persoon2_id,
+                "voornaam": row.persoon2_voornaam,
+                "achternaam": row.persoon2_achternaam
+            },
+            "relatietype": {
+                "id": row.relatietype_id,
+                "relatienaam": row.relatienaam
+            }
+        })
+
+    return templates.TemplateResponse("relaties.html", {"request": request, "relaties": relaties})
 
 @router.get("/", response_class=HTMLResponse)
 @login_required
@@ -41,8 +103,6 @@ async def list_relaties(request: Request, session: Session = Depends(get_session
     # Log de SQL query
     sql = query.compile(compile_kwargs={"literal_binds": True})
     app_logger.debug(f"List Relaties: Generated SQL query: {sql}")
-    # print(f"[debug] Relaties.py")
-    # print(f"[debug] generated SQL query: {sql}\n")
     
     results = session.exec(query).all()
     

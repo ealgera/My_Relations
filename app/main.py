@@ -119,8 +119,7 @@ def get_upcoming_events(session: Session):
                     event_description = f"wordt {age} jaar"
                 else:
                     event_description = f"zou {age} jaar zijn geworden."
-            elif jubileumtype.naam == "Trouwdag" and persoon:
-                # Find spouse through marriage relationship
+            elif jubileumtype.naam == "Trouwdag" and persoon:  # Voor dit Jubileum is de partner nodig
                 spouse = session.exec(
                     select(Personen)
                     .join(Relaties, or_(

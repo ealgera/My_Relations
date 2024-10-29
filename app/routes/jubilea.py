@@ -82,6 +82,8 @@ async def list_jubilea(request: Request, session: Session = Depends(get_session)
     
     if sort == "jubileumtype":
         query = query.order_by(Jubileumtypes.naam)
+    elif sort == "jubileumnaam":
+        query = query.order_by(Jubilea.jubileumnaam)
     elif sort == "jubileumdag":
         query = query.order_by(Jubilea.jubileumdag)
     elif sort == "persoon":
