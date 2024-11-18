@@ -12,6 +12,7 @@
     <thead>
         <tr style="background-color: #007bff; color: #ffffff; font-size: 1.1em;">
             <th>Relatienaam</th>
+            <th>Symmetrisch</th>
             <th>Acties</th>
         </tr>
     </thead>
@@ -19,6 +20,13 @@
         {% for relatietype in relatietypes %}
         <tr style="font-size: 1.2em;">
             <td>{{ relatietype.relatienaam }}</td>
+            <td>
+                {% if relatietype.symmetrisch %}
+                <i class="material-icons text-success">check_circle</i>
+                {% else %}
+                <i class="material-icons text-danger">cancel</i>
+                {% endif %}
+            </td>
             <td>
                 <a href="{{ url_for('edit_relatietype', relatietype_id=relatietype.id) }}" class="btn btn-sm btn-outline-primary" title="Bewerken">
                     <i class="material-icons" style="font-size: 1.4em;">edit</i>

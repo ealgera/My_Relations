@@ -127,7 +127,7 @@ def get_upcoming_events(session: Session):
                         and_(Relaties.persoon2_id == Personen.id, Relaties.persoon1_id == persoon.id)
                     ))
                     .join(Relatietypes)
-                    .where(Relatietypes.relatienaam == "Gehuwd")
+                    .where(Relatietypes.relatienaam == "is gehuwd met")
                 ).first()
                 
                 years = this_year_event.year - event_date.year

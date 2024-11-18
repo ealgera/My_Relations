@@ -123,19 +123,29 @@ async def edit_persoon(request: Request, persoon_id: int, session: Session = Dep
     # Sorteer de jubilea op datum
     sorted_jubilea = sorted(persoon.jubilea, key=lambda x: datetime.strptime(x.jubileumdag, "%Y-%m-%d"))
     
-    # Combineer relaties waarin de persoon persoon1 of persoon2 is
-    alle_relaties = persoon.relaties_als_persoon1 + persoon.relaties_als_persoon2
-    
-    # Bereid de relatie-informatie voor
+    # Filter relaties volgens de regels:
+    # 1. Toon alle symmetrische relaties
+    # 2. Toon niet-symmetrische relaties alleen als persoon1
     relaties_info = []
-    for relatie in alle_relaties:
-        gerelateerde_persoon = relatie.persoon2 if relatie.persoon1_id == persoon_id else relatie.persoon1
+    
+    # Verwerk relaties waar de persoon persoon1 is
+    for relatie in persoon.relaties_als_persoon1:
         relaties_info.append({
             "id": relatie.id,
             "relatietype": relatie.relatietype,
             "persoon1": relatie.persoon1,
             "persoon2": relatie.persoon2
         })
+    
+    # Verwerk relaties waar de persoon persoon2 is, maar alleen als ze symmetrisch zijn
+    for relatie in persoon.relaties_als_persoon2:
+        if relatie.relatietype.symmetrisch:
+            relaties_info.append({
+                "id": relatie.id,
+                "relatietype": relatie.relatietype,
+                "persoon1": relatie.persoon1,
+                "persoon2": relatie.persoon2
+            })
     
     return templates.TemplateResponse("persoon_form.html", {
         "request" : request, 
@@ -213,17 +223,23 @@ async def persoon_detail(request: Request, persoon_id: int, session: Session = D
     if not persoon:
         raise HTTPException(status_code=404, detail="Persoon niet gevonden")
     
-    # Combineer relaties waarin de persoon persoon1 of persoon2 is
-    alle_relaties = persoon.relaties_als_persoon1 + persoon.relaties_als_persoon2
-    
-    # Bereid de relatie-informatie voor
+    # Filter relaties volgens dezelfde regels als in edit_persoon
     relaties_info = []
-    for relatie in alle_relaties:
-        gerelateerde_persoon = relatie.persoon2 if relatie.persoon1_id == persoon_id else relatie.persoon1
+    
+    # Verwerk relaties waar de persoon persoon1 is
+    for relatie in persoon.relaties_als_persoon1:
         relaties_info.append({
             "relatietype": relatie.relatietype,
-            "gerelateerde_persoon": gerelateerde_persoon
+            "gerelateerde_persoon": relatie.persoon2
         })
+    
+    # Verwerk relaties waar de persoon persoon2 is, maar alleen als ze symmetrisch zijn
+    for relatie in persoon.relaties_als_persoon2:
+        if relatie.relatietype.symmetrisch:
+            relaties_info.append({
+                "relatietype": relatie.relatietype,
+                "gerelateerde_persoon": relatie.persoon1
+            })
     
     # Haal jubilea op
     jubilea = persoon.jubilea

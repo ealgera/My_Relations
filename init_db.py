@@ -2,12 +2,16 @@ import os
 from sqlmodel import SQLModel, create_engine, Session, text
 from app.database import DATABASE_URL
 from sqlalchemy.exc import OperationalError
+from app.models.models import Rollen, Gebruikers, Families, Personen, Jubileumtypes, Jubilea, Relatietypes, Relaties
 
 from app.logging_config import app_logger, log_info
 
 def init_db():
     # Extract the database file path from the DATABASE_URL
+
+    print(f"[INIT_DB] Database URL: {DATABASE_URL}")
     db_file = DATABASE_URL.replace("sqlite:///", "")
+    print(f"[INIT_DB] DB_file     : {db_file}")
     
     # Check if the database file already exists
     log_info("[INIT_DB] Checking Database...")

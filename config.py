@@ -7,7 +7,7 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).parent
 
 class Settings(BaseSettings):
-    DATABASE_URL        : str           = Field(default="sqlite:///./my_relations_app.db")
+    DATABASE_URL        : str           = Field(default=f"sqlite:///{PROJECT_ROOT}/data/my_relations_app.db")
     SECRET_KEY          : Optional[str] = Field(default=None)
     GOOGLE_CLIENT_ID    : Optional[str] = Field(default=None)
     GOOGLE_CLIENT_SECRET: Optional[str] = Field(default=None)
@@ -29,6 +29,10 @@ class Settings(BaseSettings):
         # Convert FOTO_DIR to Path and ensure it exists
         self.FOTO_DIR = Path(self.FOTO_DIR)
         self.FOTO_DIR.mkdir(parents=True, exist_ok=True)
+
+        # Ensure data directory exists
+        data_dir = PROJECT_ROOT / "data"
+        data_dir.mkdir(parents=True, exist_ok=True)
 
 @lru_cache()
 def get_settings():

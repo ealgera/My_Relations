@@ -22,9 +22,10 @@ async def new_relatietype(request: Request):
 async def create_relatietype(
     request: Request,
     relatienaam: str = Form(...),
+    symmetrisch: bool = Form(False),
     session: Session = Depends(get_session)
 ):
-    new_relatietype = Relatietypes(relatienaam=relatienaam)
+    new_relatietype = Relatietypes(relatienaam=relatienaam, symmetrisch=symmetrisch)
     session.add(new_relatietype)
     session.commit()
     return RedirectResponse(url="/relatietypes", status_code=303)
@@ -40,6 +41,7 @@ async def edit_relatietype(relatietype_id: int, request: Request, session: Sessi
 async def update_relatietype(
     relatietype_id: int,
     relatienaam: str = Form(...),
+    symmetrisch: bool = Form(False),
     session: Session = Depends(get_session)
 ):
     relatietype = session.get(Relatietypes, relatietype_id)
@@ -47,6 +49,7 @@ async def update_relatietype(
         raise HTTPException(status_code=404, detail="Relatietype niet gevonden")
     
     relatietype.relatienaam = relatienaam
+    relatietype.symmetrisch = symmetrisch
     session.add(relatietype)
     session.commit()
     return RedirectResponse(url="/relatietypes", status_code=303)

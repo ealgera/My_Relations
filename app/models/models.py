@@ -76,6 +76,7 @@ class Jubilea(SQLModel, table=True):
 class Relatietypes(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     relatienaam: str
+    symmetrisch: bool = Field(default=False, nullable=False)
     
     relaties: List["Relaties"] = Relationship(back_populates="relatietype")
 
