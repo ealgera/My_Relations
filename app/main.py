@@ -74,9 +74,9 @@ app.include_router(admin.router, prefix="/admin", tags=["admin"])
 
 app.include_router(auth_router, tags=["auth"])
 
-@app.on_event("startup")
-async def startup_event():
-    create_db_and_tables()
+# @app.on_event("startup")
+# async def startup_event():
+    # create_db_and_tables()
 
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request: Request, exc: HTTPException):

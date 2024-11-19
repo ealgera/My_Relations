@@ -86,7 +86,7 @@ async def update_user(
 @router.get("/{user_id}/delete")
 @login_required
 @role_required("Administrator")
-async def delete_user(user_id: int, session: Session = Depends(get_session)):
+async def delete_user(request: Request, user_id: int, session: Session = Depends(get_session)):
     user = session.get(Gebruikers, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="Gebruiker niet gevonden")

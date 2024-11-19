@@ -31,7 +31,7 @@ async def create_relatietype(
     return RedirectResponse(url="/relatietypes", status_code=303)
 
 @router.get("/{relatietype_id}/edit", name="edit_relatietype")
-async def edit_relatietype(relatietype_id: int, request: Request, session: Session = Depends(get_session)):
+async def edit_relatietype(request: Request, relatietype_id: int, session: Session = Depends(get_session)):
     relatietype = session.get(Relatietypes, relatietype_id)
     if not relatietype:
         raise HTTPException(status_code=404, detail="Relatietype niet gevonden")
@@ -39,6 +39,7 @@ async def edit_relatietype(relatietype_id: int, request: Request, session: Sessi
 
 @router.post("/{relatietype_id}/edit", name="update_relatietype")
 async def update_relatietype(
+    request: Request, 
     relatietype_id: int,
     relatienaam: str = Form(...),
     symmetrisch: bool = Form(False),
@@ -55,7 +56,7 @@ async def update_relatietype(
     return RedirectResponse(url="/relatietypes", status_code=303)
 
 @router.get("/{relatietype_id}/delete", name="delete_relatietype")
-async def delete_relatietype(relatietype_id: int, session: Session = Depends(get_session)):
+async def delete_relatietype(request: Request, relatietype_id: int, session: Session = Depends(get_session)):
     relatietype = session.get(Relatietypes, relatietype_id)
     if not relatietype:
         raise HTTPException(status_code=404, detail="Relatietype niet gevonden")

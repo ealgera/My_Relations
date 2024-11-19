@@ -153,7 +153,7 @@ async def create_relatie(
 
 @router.get("/{relatie_id}/edit", response_class=HTMLResponse)
 @login_required
-async def edit_relatie(relatie_id: int, request: Request, session: Session = Depends(get_session)):
+async def edit_relatie(request: Request, relatie_id: int, session: Session = Depends(get_session)):
     relatie = session.get(Relaties, relatie_id)
     if not relatie:
         raise HTTPException(status_code=404, detail="Relatie niet gevonden")
@@ -164,6 +164,7 @@ async def edit_relatie(relatie_id: int, request: Request, session: Session = Dep
 @router.post("/{relatie_id}/edit")
 @login_required
 async def update_relatie(
+    request: Request,
     relatie_id: int,
     persoon1_id: int = Form(...),
     persoon2_id: int = Form(...),
@@ -187,7 +188,7 @@ async def update_relatie(
 
 @router.get("/{relatie_id}/delete")
 @login_required
-async def delete_relatie(relatie_id: int, session: Session = Depends(get_session)):
+async def delete_relatie(request: Request,relatie_id: int, session: Session = Depends(get_session)):
     relatie = session.get(Relaties, relatie_id)
     if not relatie:
         raise HTTPException(status_code=404, detail="Relatie niet gevonden")

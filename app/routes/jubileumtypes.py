@@ -30,7 +30,7 @@ async def create_jubileumtype(
     return RedirectResponse(url="/jubileumtypes", status_code=303)
 
 @router.get("/{jubileumtype_id}/edit", response_class=HTMLResponse, name="edit_jubileumtype")
-async def edit_jubileumtype(jubileumtype_id: int, request: Request, session: Session = Depends(get_session)):
+async def edit_jubileumtype(request: Request, jubileumtype_id: int, session: Session = Depends(get_session)):
     jubileumtype = session.get(Jubileumtypes, jubileumtype_id)
     if not jubileumtype:
         raise HTTPException(status_code=404, detail="Jubileumtype niet gevonden")
@@ -38,6 +38,7 @@ async def edit_jubileumtype(jubileumtype_id: int, request: Request, session: Ses
 
 @router.post("/{jubileumtype_id}/edit", response_class=HTMLResponse, name="update_jubileumtype")
 async def update_jubileumtype(
+    request: Request,
     jubileumtype_id: int,
     naam: str = Form(...),
     session: Session = Depends(get_session)
@@ -51,7 +52,7 @@ async def update_jubileumtype(
     return RedirectResponse(url="/jubileumtypes", status_code=303)
 
 @router.get("/{jubileumtype_id}/delete", response_class=HTMLResponse, name="delete_jubileumtype")
-async def delete_jubileumtype(jubileumtype_id: int, session: Session = Depends(get_session)):
+async def delete_jubileumtype(request: Request, jubileumtype_id: int, session: Session = Depends(get_session)):
     jubileumtype = session.get(Jubileumtypes, jubileumtype_id)
     if not jubileumtype:
         raise HTTPException(status_code=404, detail="Jubileumtype niet gevonden")

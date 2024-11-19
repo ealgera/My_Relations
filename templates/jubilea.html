@@ -72,7 +72,7 @@
             <td>
                 {% if jubileum.url %}
                     <a href="{{ jubileum.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
-                        <i class="material-icons" style="font-size: 1.4em;">link</i>
+                        <i class="material-icons" style="vertical-align: middle;">link</i>
                     </a>
                 {% else %}
                     -
@@ -80,10 +80,10 @@
             </td>
             <td>
                 <a href="{{ url_for('edit_jubileum', jubileum_id=jubileum.id) }}" class="btn btn-sm btn-outline-primary" title="Bewerken">
-                    <i class="material-icons" style="font-size: 1.4em;">edit</i>
+                    <i class="material-icons" style="vertical-align: middle;">edit</i>
                 </a>
                 <a href="{{ url_for('delete_jubileum', jubileum_id=jubileum.id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Weet je zeker dat je dit jubileum wilt verwijderen?')" title="Verwijderen">
-                    <i class="material-icons" style="font-size: 1.4em;">delete</i>
+                    <i class="material-icons" style="vertical-align: middle;">delete</i>
                 </a>
             </td>
         </tr>
@@ -99,6 +99,8 @@
     font-family: sans-serif;
     min-width: 400px;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+    table-layout: fixed;
+    width: 100%;
 }
 
 .styled-table thead tr {
@@ -110,6 +112,9 @@
 .styled-table th,
 .styled-table td {
     padding: 12px 15px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .styled-table tbody tr {
@@ -121,8 +126,17 @@
 }
 
 .styled-table tbody tr:last-of-type {
-    border-bottom: 2px solid #007bff;;
+    border-bottom: 2px solid #007bff;
 }
+
+/* Column widths */
+.styled-table th:nth-child(1), .styled-table td:nth-child(1) { width: 15%; } /* Naam */
+.styled-table th:nth-child(2), .styled-table td:nth-child(2) { width: 10%; } /* Datum */
+.styled-table th:nth-child(3), .styled-table td:nth-child(3) { width: 15%; } /* Persoon */
+.styled-table th:nth-child(4), .styled-table td:nth-child(4) { width: 10%; } /* Type */
+.styled-table th:nth-child(5), .styled-table td:nth-child(5) { width: 35%; } /* Omschrijving */
+.styled-table th:nth-child(6), .styled-table td:nth-child(6) { width: 5%; }  /* URL */
+.styled-table th:nth-child(7), .styled-table td:nth-child(7) { width: 10%; } /* Acties */
 </style>
 
 {% endblock %}
